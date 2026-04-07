@@ -1,0 +1,938 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx, float}
+\usepackage[round]{natbib}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{helvet}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\renewcommand{\arraystretch}{1.25}
+\graphicspath{{images/}}
+
+\bibliographystyle{apalike}
+
+\title{From Competition to Cooperation:\\Teaching LLMs Pareto-Efficient Negotiation with LA-GRPO}
+\author{Michael Gubler}
+\date{May 2026}
+
+\begin{document}
+
+% ============================================================
+% TITLE PAGE
+% ============================================================
+\begin{titlepage}
+    \thispagestyle{empty}
+    \centering
+
+    {\LARGE \textbf{From Competition to Cooperation}\par}
+    \vspace{0.4cm}
+    {\large \textbf{Teaching LLMs Pareto-Efficient Negotiation with LA-GRPO}\par}
+    \vspace{0.6cm}
+    {\large \textbf{Master Thesis}\par}
+
+    \vspace{1.5cm}
+
+    \begin{flushleft}
+    \begin{tabular}{@{}l p{9cm}@{}}
+        \textbf{Author:} & Michael Gubler \\
+                         & Dättnauerstrasse 133 \\
+                         & CH-8406 Winterthur \\
+                         & michael.gubler@stud.hslu.ch \\[1.0em]
+
+        \textbf{Supervisor:} & Oliver Staubli \\
+                             & Lucerne University of Applied Sciences and Arts \\
+                             & Werftestrasse 4 \\
+                             & CH-6002 Lucerne \\
+                             & oliver.staubli@hslu.ch \\[1.0em]
+
+        \textbf{Co-Supervisor:} & Peter Niederberger \\
+                                & Tincan AG \\
+                                & Feldpark 17 \\
+                                & CH-6300 Zug \\
+                                & p.niederberger@tincan.ch \\
+    \end{tabular}
+    \end{flushleft}
+
+    \vfill
+
+    \centering
+    Lucerne University of Applied Sciences and Arts \\[0.2cm]
+    \textbf{Master of Science in Applied Information and Data Science (MScIDS)} \\[0.2cm]
+    Spring Semester 2026 \\[1.2cm]
+
+    Winterthur, May 2026
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+
+% ============================================================
+% 1. INTRODUCTION
+% ============================================================
+\section{Introduction}
+\label{sec:introduction}
+
+Large Language Models (LLMs) have rapidly advanced in their ability to conduct multi-turn dialogues across a variety of domains, ranging from tutoring and healthcare to code generation and strategic interaction. A particularly relevant testbed for studying multi-turn reasoning is negotiation, where agents must balance short-term concessions with long-term gains, maintain coherence across multiple exchanges, and adapt to dynamic counterpart behavior. For instance, GPT-4 and similar models already perform well on various negotiation subtasks (e.g. understanding offers and devising counter-proposals), often matching or surpassing specialized models in objective evaluations \citep{kwon-etal-2024-llms}. 
+\par
+\citet{franceschetti2025advantage} introduced Local Advantage Group Relative Policy Optimization (LA-GRPO), a novel method that addresses the credit assignment problem in multi-turn dialogues by isolating learning signals at the turn level. LA-GRPO outperformed traditional GRPO in complex bargaining settings, achieving more efficient and effective negotiation strategies without degrading general language capabilities. However, this work primarily focused on zero-sum bargaining scenarios, where one party's gain directly translates into the other's loss.
+\par
+While zero-sum games are analytically convenient, many real-world negotiations are non-zero-sum. Examples include labor agreements, international treaties, or business partnerships, where cooperation and joint value creation play a critical role. In such contexts, success is not only measured by maximizing individual payoff but also by achieving Pareto-efficient outcomes, where no party can be made better off without making the other worse off. Cooperative negotiation requires LLMs to balance self-interest with fairness, recognize opportunities for mutual gain, and avoid exploitative strategies that may undermine long-term trust or stability.
+\par
+Most existing research and alignment of LLM-based negotiators has focused on competitive or zero-sum settings. \citet{jiang-akcakir-2025-explicit} noted that in the absence of explicit negotiation instructions, LLMs showed a 50-90\% lower success rate than in instructed scenarios. In other words, current LLMs are trained to compete for the largest share, with little attention to fairness or joint outcomes. Human negotiation theory warns of a ``negotiator's dilemma,'' where tactics for claiming value (hard bargaining and withholding information) directly undermine those for creating value (open sharing and building trust). If both parties compete relentlessly, the result is often a dead end or a mediocre compromise, whereas mutual cooperation could have yielded a better Pareto-optimal outcome \citep{lax1992manager_summary}. Notably, a recent AI negotiation competition found that agents using warm and cooperative communication achieved higher joint gains and more agreements, whereas overly dominant agents frequently stalemated \citep{vaccaro2025advancingainegotiationsnew}.
+\par
+Since I believe that AI negotiators will soon enter the real world en masse, it is important to increase value creation for everyone by training LLMs to both compete and cooperate intuitively -- without the need of explicit prior instructions.
+
+
+\subsection{Thematic Scope}
+
+This thesis builds directly on \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) work by shifting the focus from competition to cooperation. It investigates how LA-GRPO and related alignment techniques can be adapted to multi-objective reward structures, enabling LLMs to learn negotiation strategies that maximize both individual and collective outcomes. This requires agents to identify creative trade-offs and integrative solutions that improve overall welfare for everyone. The overarching aim is to investigate whether alignment methods originally developed for zero-sum bargaining can be adapted to teach models cooperative behavior - balancing self-interest with collective welfare.
+\par
+The thematic emphasis on cooperation is not only of academic interest but carries significant real-world relevance. Many of the most pressing negotiation challenges in society are fundamentally non-zero-sum. For example contract negotiations in business benefit from collaborative thinking: long-term partnerships flourish when agreements are seen as fair and value-maximizing for both client and provider, rather than one party squeezing the other.
+\par
+A central aspect of this exploration is the learning process itself. Franceschetti's thesis showed that applying credit assignment locally at the dialogue-turn level led to more stable and efficient learning in competitive negotiations. Building on that insight, this work examines whether similar turn-level learning dynamics can foster cooperation and therefore allowing the model to recognize the consequences of individual utterances and gradually internalize strategies that promote mutual gain.
+\par
+The thesis employs multi-issue negotiation tasks as test environments. Unlike a simple single-issue deal where one side's gain equals the other's loss, multi-issue negotiations allow for trade-offs that benefit both sides. Examples include the Nash Bargaining Game and the Two-Issue Bargaining Problem, which will be explained further in the next chapter.
+\par
+Finally, cooperation must of course be tempered with robustness to defection. In practice, a negotiator (whether human or AI) should be willing to cooperate but not naïvely so -- it must be resilient if the other side attempts to cheat, bluff, or unduly take advantage of goodwill. Therefore, a subtler aspect of the thesis's scope is investigating how LLM agents can maintain a cooperative stance that welcomes mutual trust, but also detect and appropriately respond to uncooperative behavior by others. The aim is to cultivate agents that promote collaboration by default, but can fall back on protective tactics if needed, ensuring they are not easily exploited. This balance between collaboration and caution is critical for real-world deployment: it mirrors the way effective human negotiators build trust and find common ground, while still preparing for worst-case scenarios.
+
+
+\subsection{Research Questions}
+To that end, the following key research questions are investigated:
+
+\begin{enumerate}[label={}, leftmargin=0pt, itemsep=1.2em]
+    \item \textbf{RQ1: Turn-Level Learning:} Does applying LA-GRPO at the single-turn level improve learning performance in cooperative negotiation games?
+    \par This question tests whether applying LA-GRPO at the single-turn level improves learning stability and convergence in cooperative negotiations. Performance will be compared against baseline GRPO by measuring mean negotiation reward, convergence rate, and token efficiency across multiple training runs.
+
+    \item \textbf{RQ2: Reward Function Design:} How can reward functions be designed to balance individual payoff maximization with collective welfare and fairness?
+    \par This question investigates how different scalar reward compositions affect negotiation outcomes. Various weightings of self-utility, social welfare, and fairness ($\lambda$ parameters) will be evaluated through ablation studies. Success is indicated by higher joint welfare and Pareto efficiency without sacrificing individual payoff.
+
+    \item \textbf{RQ3: Cooperation-Focused Metrics:} Which evaluation metrics best capture cooperative success in negotiation beyond traditional utility scores?
+    \par This question examines which evaluation metrics best capture cooperative behavior. In addition to individual utility, outcomes will be assessed using social welfare, Nash product, and fairness indices. Pareto front analysis and equality metrics will be used to identify efficiency--fairness trade-offs.
+
+    \item \textbf{RQ4: Robustness to Defection:} Can LLMs trained for cooperation maintain robustness and negotiation effectiveness when facing non-cooperative or adversarial counterparts?
+    \par This question assesses whether cooperative agents remain effective when facing non-cooperative or adversarial counterparts. Experiments will pair trained models with selfish baselines and random agents to measure negotiation success rates and payoff degradation under defection.
+
+    \item \textbf{RQ5: Impact on LLM Capabilities:} To what extent does promoting cooperation affect the linguistic and reasoning capabilities of the underlying LLM?
+    \par This question evaluates whether training for cooperation affects general reasoning and linguistic ability. The fine-tuned models will be tested on standard NLP benchmarks (MMLU-Pro, GLUE, IFEval, EQ-Bench) and compared to the base model to detect possible over-optimization or capability loss.
+\end{enumerate}
+
+
+\subsection{Thesis Structure}
+The remainder of this thesis is organized as follows. Chapter~\ref{sec:background} provides the theoretical background on negotiation theory, cooperative game theory, and reinforcement learning alignment methods. Chapter~\ref{sec:methodology} describes the methodological contribution---adapting LA-GRPO for cooperative reward signals. Chapter~\ref{sec:experimental_setup} details the experimental setup, including the negotiation environment, game design, and evaluation pipeline. Chapter~\ref{sec:results} presents and discusses the results. Chapter~\ref{sec:conclusion} concludes with a summary, limitations, and future directions.
+
+
+% ============================================================
+% 2. THEORETICAL BACKGROUND AND RELATED WORK
+% ============================================================
+\newpage
+\section{Theoretical Background and Related Work}
+\label{sec:background}
+
+This chapter provides the conceptual foundation for the thesis. It connects negotiation theory, cooperative game theory, and reinforcement learning alignment, and identifies the limitations of current methods in promoting cooperation.
+
+\subsection{Negotiations as Multi-Agent Decision Processes}
+
+Franceschetti formulated multi-turn negotiation as a Markov Decision Process (MDP), where states $s_t$ correspond to the dialogue history up to turn $t$, actions $a_t$ represent the next utterance, and a terminal reward $R(s_N)$ is assigned at the end of the negotiation based on the agreed outcome. Two agents alternate offers over $N=5$ rounds each, following an alternating-offer protocol.
+
+In zero-sum settings, $U_A + U_B$ is approximately constant---one agent's gain is the other's loss. The key departure in this thesis is the extension to \textbf{non-zero-sum} (mixed-motive) games, where $U_A + U_B$ varies across outcomes. In integrative games, trade-offs between issues of differing importance create opportunities for mutual gain that do not exist in purely distributive settings.
+
+\textcolor{gray}{[TODO: Add formal MDP definition following Franceschetti's notation. Include state transition diagram.]}
+
+\subsection{Cooperative and Integrative Negotiation Theory}
+
+\paragraph{Pareto Efficiency.} An outcome is Pareto-efficient if no alternative exists that makes one party better off without making the other worse off. In multi-issue negotiations, Pareto-efficient outcomes typically require agents to identify and exploit differences in issue importance---conceding on less-valued issues in exchange for gains on more-valued ones.
+
+\paragraph{Nash Bargaining Solution.} \citet{Nash1950THEBP} introduced the Nash bargaining solution, defining fair and Pareto-efficient outcomes as the product of agents' utilities. The product $U_A \times U_B$ is the unique solution satisfying four axioms: Pareto efficiency, symmetry, scale invariance, and independence of irrelevant alternatives. This makes the Nash product a theoretically grounded single metric for cooperative success.
+
+\paragraph{Unreasonable Fairness of Nash Welfare.} \citet{caragiannis2019unreasonable} demonstrated a remarkable result: maximizing Nash welfare (the product of utilities) simultaneously achieves envy-freeness up to one good \emph{and} Pareto efficiency in allocation problems. They call this ``unreasonable'' because Nash welfare was designed for efficiency, yet it also provides strong fairness guarantees. This provides the strongest theoretical argument for using the Nash product as the dominant cooperative term in our reward function---it captures both efficiency and fairness in a single metric.
+
+\paragraph{Integrative Bargaining.} Unlike single-issue distributive bargaining, multi-issue negotiations allow for log-rolling and package deals where parties trade concessions across issues with different importance weights \citep{lax1992manager_summary}. This is the mechanism through which cooperative agents can create value rather than merely distribute it.
+
+\subsection{Alignment Methods for Multi-Turn Dialogue}
+
+\begin{table}[H]
+\centering
+\caption{Comparison of alignment methods for multi-turn negotiation.}
+\label{tab:alignment_methods}
+\begin{tabular}{llll}
+\toprule
+\textbf{Method} & \textbf{Loss} & \textbf{Sampling} & \textbf{Pipeline} \\
+\midrule
+DPO & Sigmoid preference & Full trajectory & Offline \\
+REFUEL & Quadratic advantage & Turn-level & Offline \\
+GRPO & Group relative policy opt. & $G$ trajectories per prompt & Online \\
+LA-GRPO & GRPO + turn-level sampling & $G$ continuations from turn $h$ & Online \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{DPO.} \citet{rafailov2023direct} proposed Direct Preference Optimization, a preference-based post-training method that optimizes LLMs from human comparison data without explicit reward models. Being offline and preference-based, it lacks exploration and is limited to the quality of existing comparison data; a baseline for later multi-turn approaches.
+
+\paragraph{REFUEL.} \citet{gao2024regressing} presented REFUEL, a turn-level reinforcement-learning approach that isolates individual dialogue turns to propagate final rewards, partially solving the credit-assignment problem. However, it remains offline and does not benefit from on-policy exploration.
+
+\paragraph{GRPO.} \citet{shao2024deepseekmath} introduced Group Relative Policy Optimization, an online reinforcement-learning method comparing grouped trajectories instead of using a value function. It generates $G$ independent trajectories per prompt and computes group-relative advantages $A_i = (R_i - \mu) / \sigma$. This on-policy method avoids the need for a value function but assigns the same advantage to every token in a trajectory, creating a noisy learning signal for multi-turn dialogues. GRPO is the precursor to LA-GRPO.
+
+\paragraph{LA-GRPO.} \citet{franceschetti2025advantage} extended GRPO with turn-level sampling: a shared prefix is played until a randomly sampled turn $h$, then $G$ independent continuations are generated. Since all reward variation comes from decisions at turn $h$ onward, the advantage signal provides local credit assignment---the model learns which turn-level decisions matter. LA-GRPO outperformed traditional GRPO in complex bargaining settings, achieving more efficient and effective negotiation strategies.
+
+\subsection{Cooperative Reinforcement Learning and Social Objectives}
+
+\paragraph{Prosocial Reward Shaping.} \citet{peysakhovich2017prosocial} trained deep RL agents with $R_i = (1 - \alpha) \times U_{\text{self}} + \alpha \times U_{\text{other}}$, showing that prosocial agents cooperate in social dilemmas even with novel partners.
+
+\paragraph{Welfare Maximization.} \citet{pmlr-v162-liu22l} applied reinforcement-learning techniques to model fairness and efficiency trade-offs in multi-agent economic systems, connecting game-theoretic welfare optimization with machine learning.
+
+\paragraph{Inequity Aversion.} \citet{hughes2018inequity} incorporated inequity aversion into multi-agent RL, demonstrating that agents can learn to avoid outcomes perceived as unfair.
+
+\paragraph{Opponent Diversity.} \citet{mckee2020social} showed that diversity of training partners matters more than specific opponent characteristics for developing robust social behavior.
+
+\paragraph{Linear Scalarization Limits.} \citet{hayes2022practical} established that linear scalarization can only discover solutions on the convex hull of the Pareto front. Our reward formula partially circumvents this limitation because the Nash product term ($U_A \times U_B$) is inherently non-linear.
+
+\paragraph{Strategic Reasoning in LLMs.} \citet{duan2024gtbenchuncoveringstrategicreasoning} evaluated LLMs' strategic reasoning abilities across diverse game-theoretic environments, highlighting limitations in long-term planning and strategic adaptation. \citet{jiang-akcakir-2025-explicit} empirically showed that explicit cooperation cues substantially improve negotiation success and human-likeness in LLM interactions. \citet{vaccaro2025advancingainegotiationsnew} reported large-scale evidence that agents using cooperative and empathetic language achieve higher joint gains than purely competitive agents.
+
+\subsection{Summary and Research Gap}
+
+LA-GRPO has been demonstrated only for competitive (zero-sum) negotiation. Cooperative reward shaping in multi-turn LLM dialogues remains unexplored. This thesis closes the gap by adapting LA-GRPO's turn-level credit assignment mechanism to a cooperative reward signal that balances self-interest, social welfare, and fairness.
+
+
+% ============================================================
+% 3. METHODOLOGY
+% ============================================================
+\newpage
+\section{Methodology: Adapting LA-GRPO for Cooperative Negotiation}
+\label{sec:methodology}
+
+This chapter describes the main technical contribution: modifying the LA-GRPO framework to optimize for cooperative rather than purely competitive negotiation outcomes.
+
+\subsection{Overview of Approach}
+
+The core idea is to teach an LLM to balance individual and collective interests by learning directly from self-generated negotiation dialogues. Building directly on \citet{franceschetti2025advantage}, the method retains the turn-level credit assignment mechanism---isolating each negotiation turn as an independent optimization unit---but replaces the original competitive payoff with a cooperative scalar reward.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=4.7in]{images/overview-approach.png}
+    \caption{Own illustration to show the overview of the learning process.}
+    \label{fig:overview}
+\end{figure}
+
+Each training iteration follows the following steps:
+
+\begin{enumerate}
+     \item \textbf{Scenario initialization}
+     \newline
+     Two symmetric instances of the same model (Qwen3-14B-Instruct with LoRA adapters) negotiate in natural language. The roles differ only in private payoff tables describing their preferences over issues.
+     \item \textbf{Token generation until random turn $h$}
+     \newline
+     The dialogue proceeds token-by-token until a random negotiation turn $h$ is reached. Sampling different turns allows the algorithm to attribute downstream outcome differences to a single utterance and to spread learning evenly across the dialogue horizon.
+     \item \textbf{Forking $G$ local continuations}
+     \newline
+     At turn $h$, the model forks $G$ continuations from the identical prefix---generating $G$ alternative offers or responses---and then completes each dialogue to termination (either agreement or no-deal). These local rollouts differ only in what $\pi_0$ says at turn $h$.
+     \item \textbf{Outcome extraction}
+     \newline
+     Each completed dialogue is parsed by an evaluator model (GPT-4o-mini) that extracts the final agreement and detects whether a valid deal was reached. The evaluator model receives the final agreement as a string and returns a formatted JSON that allows for reward calculations.
+     \item \textbf{Reward computation}
+     \newline
+     For each continuation, the final agreement is mapped to numeric utilities $U_A$, $U_B$ using the private payoff tables. The cooperative scalar reward combines individual and collective performance.
+     \item \textbf{Computing local group-relative advantages}
+     \newline
+     Across the $G$ returns derived from the same context, rewards are normalized to compute local advantages. Each advantage is assigned to all tokens of turn $h$, tracing performance differences back to that specific utterance.
+     \item \textbf{LA-GRPO update}
+     \newline
+     The model's LoRA adapters are updated by maximizing the log-probability of the tokens in higher-advantage turns while applying a KL regularization term that constrains the policy toward a frozen reference model. Only $\pi_0$ is updated; $\pi_c$ remains fixed to ensure a stationary environment.
+\end{enumerate}
+After updating the model's LoRA adapters, a new scenario is initialized. Because new dialogues are generated after every update, the model is constantly learning from its own evolving behavior rather than from a static dataset.
+
+
+\subsection{Cooperative Reward Design}
+
+\subsubsection{From Competitive to Cooperative Reward}
+
+In \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) original formulation, each agent's return is based purely on its individual utility derived from the final negotiated outcome. This setup corresponds to zero-sum or competitive bargaining, where one party's gain is typically the other's loss and learning is driven by self-interest.
+\par
+In contrast, the present work extends this reward structure to non-zero-sum (mixed-motive) negotiation. Adapting LA-GRPO to this setting requires redefining the scalar reward so that it reflects not only the agent's own payoff but also the collective efficiency and equity of the final outcome.
+\par
+To formalize this, we introduce three cooperative criteria commonly used in bargaining theory and multi-agent reinforcement learning:
+
+\begin{enumerate}[label={}, leftmargin=0pt]
+    \item \textbf{Self-utility ($U_A$):} The agent's own payoff from the agreed outcome. This term preserves an incentive for self-interested performance. This is what was used by \citet{franceschetti2025advantage}.
+    \item \textbf{Social welfare ($U_A + U_B$):} The joint utility of both parties, representing total value creation \citep{pmlr-v162-liu22l}. Maximizing this term encourages the agent to find agreements that improve overall efficiency.
+    \item \textbf{Fairness / Nash product ($U_A \times U_B$):} A measure introduced by \citet{Nash1950THEBP}, which reaches its maximum when both parties achieve high and balanced payoffs. The product drops sharply if either side receives little value, implicitly penalizing unequal or exploitative deals and promoting Pareto-efficient and equitable outcomes.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{Theoretical grounding of cooperative reward components.}
+\label{tab:reward_components}
+\begin{tabular}{lll}
+\toprule
+\textbf{Component} & \textbf{Social welfare function} & \textbf{Property} \\
+\midrule
+$\lambda_{\text{self}} \cdot U_A$ & Individual rationality & Incentive to participate \\
+$\lambda_{\text{welfare}} \cdot (U_A + U_B)$ & Utilitarianism (Bentham) & Maximizes total value \\
+$\lambda_{\text{fair}} \cdot U_A \cdot U_B$ & Nash bargaining (Nash, 1950) & Balanced, efficient outcomes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Combining these objectives yields a single scalar cooperative reward used by LA-GRPO to update the trainable policy $\pi_0$. The environment computes both agents' utilities ($U_A$, $U_B$) from their payoff tables, but only the learning agent receives the scalarized signal:
+
+\begin{equation}
+R_{\text{coop}} = \lambda_{\text{self}} \cdot U_A + \lambda_{\text{welfare}} \cdot (U_A + U_B) + \lambda_{\text{fair}} \cdot (U_A \times U_B)
+\label{eq:rcoop_raw}
+\end{equation}
+
+where $\lambda_{\text{self}}$, $\lambda_{\text{welfare}}$, $\lambda_{\text{fair}} \geq 0$ are tunable coefficients balancing self-interest, total welfare and fairness. When $\lambda_{\text{welfare}} = \lambda_{\text{fair}} = 0$, this formulation reduces to Franceschetti's original self-utility reward. Increasing these parameters gradually shifts behavior toward cooperative and Pareto-efficient negotiation.
+\par
+This cooperative scalarization preserves the single-agent optimization loop required by LA-GRPO while embedding social objectives grounded in bargaining theory and cooperative reinforcement learning. It therefore allows the model to learn cooperation from feedback alone, without explicit prompting or role conditioning.
+
+
+\subsubsection{The Scale Mismatch Problem}
+
+The three components in Eq.~\ref{eq:rcoop_raw} operate on different scales: $U_A \in [0,100]$, welfare $\in [0,200]$, Nash product $\in [0,10{,}000]$. With equal $\lambda$ values, the welfare or Nash term dominates purely due to scale---not intentional weighting. This is particularly problematic for GRPO, where the training signal comes from the advantage $A_i = (R_i - \mu) / \sigma$ within a group: if one component's variance dominates, only that component drives the gradient.
+
+Additional scale issues arise across game types. A distributive game may have $\max U_A = 80$ while a compatible game has $\max U_A = 100$. Without normalization, the model receives stronger gradient signal from compatible games. Furthermore, welfare has zero variance in pure distributive games ($U_A + U_B = \text{const}$), providing no learning signal at all for approximately 31\% of the training games.
+
+
+\subsubsection{Solution: Game-Normalized Ratios}
+
+We compute $R_{\text{coop}}$ using game-normalized ratios instead of raw values:
+
+\begin{equation}
+R_{\text{coop}} = \lambda_{\text{self}} \cdot \frac{U_A}{\max U_A} + \lambda_{\text{welfare}} \cdot \frac{U_A + U_B}{\max W} + \lambda_{\text{fair}} \cdot \frac{U_A \cdot U_B}{\max N}
+\label{eq:rcoop_normalized}
+\end{equation}
+
+Each component is now in $[0, 1]$ regardless of game type. The function \texttt{compute\_max\_metrics()} brute-forces the per-game maximum of each component across all $\leq 121$ possible outcome combinations for two-issue games. This normalization ensures that:
+\begin{enumerate}
+    \item $\lambda$ values are directly interpretable as relative importance weights.
+    \item Compatible and distributive games contribute equally to the gradient.
+    \item No component dominates by accident.
+\end{enumerate}
+
+\subsubsection{Why Nash Product Should Dominate}
+
+\citet{caragiannis2019unreasonable} showed that Nash welfare simultaneously delivers efficiency and fairness. The welfare term is largely redundant: it only adds unique signal in integrative/compatible games where total value varies but the split is already balanced. In distributive games ($\sim$31\% of our training set), welfare has zero variance and provides no learning signal whatsoever. Self-interest ($\lambda_{\text{self}}$) acts as a stabilizer---without sufficient self-interest weight, the agent can learn degenerate strategies (e.g., always conceding to ensure high Nash product).
+
+Our empirical results confirm this theoretical expectation: the all-equal configuration ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) was the worst performer, while fair-only ($\lambda_{\text{fair}} = 1.0$) achieved the highest agreement rates and most balanced outcomes (see Section~\ref{sec:results}).
+
+
+\subsection{Calculating Local Advantage}
+
+Having defined the cooperative reward $R_{\text{coop}}$, we can now compute the local advantage signal used by LA-GRPO to assign credit and update the policy.
+\par
+To isolate the learning signal for a particular dialogue turn, we follow \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) Local Advantage Group Relative Policy Optimization procedure. A turn $h$ is sampled from a geometric distribution $h \sim \mathrm{Geom}(0.3)$, bounded by $\max\_rounds - 1$. Rounds $0 \ldots h-1$ are played once as a shared prefix, identical across all $G$ generations. From round $h$ onward, $G$ independent continuations are generated.
+
+The idea is to sample several continuations from the same dialogue context and measure how each continuation's final reward compares to the group's weighted average reward:
+
+\begin{equation}
+    \hat{A}_h^i = 
+    \frac{R_{\text{coop}}(s_{N+1}^i) - \mathrm{mean}(\mathbf{R}_{\text{coop}}(s_{N+1}^i))}
+         {\mathrm{std}(\mathbf{R}_{\text{coop}}(s_{N+1}^i))},
+    \qquad i = 1, \ldots, G.
+\end{equation}
+
+This relative difference---rather than the raw return---becomes the advantage estimate for that turn. An \texttt{assistant\_mask} ensures that only agent tokens (not opponent tokens) contribute to the loss. This mask is constructed during tokenization: tokens from the agent's turns receive mask value 1, opponent turns receive 0.
+
+\textcolor{gray}{[PLACEHOLDER: If LA-GRPO training runs were conducted with cooperative reward, present comparison to standard GRPO here. If only GRPO was used, explain that LA-GRPO was implemented but training was limited to GRPO due to compute constraints.]}
+
+
+\subsection{Policy Update with LoRA Adapters}
+
+After computing the local advantage $\hat{A}_h^i$ for each sampled continuation, the trainable parameters of the negotiation model are updated through a gradient-ascent step that increases the likelihood of higher-advantage utterances. The update process follows the same optimization principle introduced by \citet{franceschetti2025advantage}, but uses the local advantage based on $R_{\text{coop}}$ instead of the purely self-interested payoff.
+
+Formally, the objective for the update step is defined as:
+\begin{equation}
+L = - \frac{1}{G} \sum_{i=1}^{G}\sum_{t=1}^{T_i}
+    \frac{\pi_{\theta}(a_{h,t}^i|s_{h,t}^i)}{\pi_{\text{old}}(a_{h,t}^i|s_{h,t}^i)}
+    \hat{A}_h^i
+    + \beta \, D_{\mathrm{KL}}\!\left[\pi_{\theta}(a_{h,t}^i|s_{h,t}^i) \,\|\, \pi_{\mathrm{ref}}(a_{h,t}^i|s_{h,t}^i)\right]
+\end{equation}
+
+The first term maximizes the log-probability of tokens belonging to high-advantage turns, therefore reinforcing actions that produced cooperative and Pareto-efficient outcomes. The second term applies \textit{KL-regularization} to constrain the updated policy toward the frozen reference model $\pi_{\mathrm{ref}}$, preventing language drift or reward hacking.
+
+Only a low-rank subset of parameters---the \textbf{LoRA adapters}---is trainable \citep{hu2021loralowrankadaptationlarge}. This modular fine-tuning strategy allows efficient weight updates on limited hardware while preserving the base model's general linguistic competence. The specific model and LoRA configuration are:
+
+\begin{itemize}
+    \item \textbf{Base model:} Qwen3-14B-Instruct, loaded in 4-bit quantization (BitsAndBytes nf4, double quant, bf16 compute dtype)
+    \item \textbf{LoRA:} $r=8$, $\alpha=16$, dropout $= 0.1$, applied to all linear modules
+    \item \textbf{Reference model:} Same model with LoRA disabled (no additional VRAM required)
+    \item \textbf{Opponent:} Frozen local model with LoRA disabled
+    \item \textbf{Loss type:} GRPO (explicitly set; TRL 0.29+ defaults to DAPO)
+\end{itemize}
+
+After each policy update, the LoRA weights are merged with the frozen base model to form a new active policy $\pi_{\theta}^{\text{new}}$. The negotiation loop then restarts with fresh self-play dialogues generated from this updated policy, keeping the procedure \textit{fully on-policy}. Because dialogues and rewards are regenerated after every iteration, the model continuously learns from its own evolving negotiation behaviour.
+
+
+\subsection{Expected Effects and Hypotheses}
+
+Based on the theoretical framework and reward design, we formulate the following hypotheses:
+
+\begin{enumerate}[label=\textbf{H\arabic*:}]
+    \item Fair-only ($\lambda_{\text{fair}}=1.0$) achieves higher agreement rate than self-only ($\lambda_{\text{self}}=1.0$), because the Nash product punishes failed negotiations with a reward of 0.
+    \item Self-only extracts more $U_A$ but at the expense of $U_B$ and overall efficiency.
+    \item All-equal ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) underperforms because the welfare term provides no signal in distributive games.
+    \item Cooperative training generalizes to unseen games (e.g., Trust Game) through transfer of cooperative disposition.
+\end{enumerate}
+
+
+% ============================================================
+% 4. EXPERIMENTAL SETUP
+% ============================================================
+\newpage
+\section{Experimental Setup}
+\label{sec:experimental_setup}
+
+This chapter describes how experiments are designed to test the cooperative LA-GRPO framework. It covers the LAMEN negotiation environment, issue sampling, evaluation pipeline, and ethical considerations.
+
+\subsection{Negotiation Environment (LAMEN)}
+
+The negotiation tasks are defined using the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}, which provides standardized, YAML-based multi-issue bargaining games. Each scenario specifies roles, issues, and payoff tables that determine agents' private utilities. LAMEN's modular structure allows easy configuration of integrative and mixed-motive games, essential for testing cooperation. Scenario definitions are loaded dynamically using the Hydra configuration system, which supports hierarchical experiment management and parameter overrides. The turn-taking protocol and evaluation prompts follow Franceschetti's original implementation and LAMEN's reference design, ensuring full comparability.
+
+The LAMEN framework provides a rich negotiation environment with modular scenario definitions. Games, issues, agent roles, and negotiation protocol rules are specified through YAML configuration files, which are composed using the Hydra library for dynamic experiment setup.
+
+\begin{enumerate}[label={}, leftmargin=0pt]
+    \item \textbf{Games:} Each game file defines the scenario context and the set of issues and their possible outcomes.
+    \item \textbf{Issues:} Every issue is accompanied by private payoff values for each agent. Every payoff value also contains a corresponding label (e.g.\ value: 10, label: \$10). This allows the use and combination of different issues for various types of games.
+    \item \textbf{Agent roles:} Agent roles define each of the two LLMs with name, gender, profession, age and personality type. This file provides an internal and external description. The internal description is only accessible to the agent itself, while the external description can also be seen by the opposing agent.
+    \item \textbf{Rules:} The rules are based on the Rio Copa game \citep{bontempo2008riocopa}. It defines prompts such as to never make offers that are not part of the possible values in the payoff table.
+\end{enumerate}
+
+The turn-taking protocol follows an alternating-offer design with 5 rounds per agent ($N=5$), and start order is alternated across episodes to counteract the anchoring effect \citep{tversky1974judgment}. Outcome extraction is performed by GPT-4o-mini, which parses negotiation transcripts and returns structured JSON with agreed values per issue. \citet{franceschetti2025advantage} verified 98\% extraction accuracy across 500 samples.
+
+
+\subsection{Game and Issue Design}
+
+Depending on how the payoff values align between the two agents, LAMEN categorizes games into four archetypes:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=4.7in]{images/lamen-archetypes.png}
+    \caption{Four archetypes of negotiation games \citep{davidson2024evaluatinglanguagemodelagency}}
+    \label{fig:archetypes}
+\end{figure}
+
+\begin{enumerate}[label={}, leftmargin=0pt]
+    \item \textbf{Distributive:} All issues are purely competitive (zero-sum)---one agent's gain is the other's loss. For a single-issue distributive game, the agents' interests directly oppose each other \citep{davidson2024evaluatinglanguagemodelagency}. A typical example is splitting a fixed resource: if two friends split a pizza, each extra slice for Alice is a slice Bob cannot have.
+    \item \textbf{Compatible:} All issues are fully aligned---both agents prefer the same outcomes. In a compatible single-issue game, there is no conflict of interest \citep{davidson2024evaluatinglanguagemodelagency}. For instance, if both parties benefit from adding extra cheese on a pizza, deciding the cheese amount is a compatible issue.
+    \item \textbf{Mixture:} Games that include multiple issues with a mix of distributive and compatible \citep{davidson2024evaluatinglanguagemodelagency}. For example, a two-issue game might have one issue being distributive (e.g.\ splitting slices of pizza) and another issue compatible (e.g.\ both want more cheese).
+    \item \textbf{Integrative-Distributive:} Multi-issue games where all issues are in themselves contested (distributive), but the agents attach different importance weights to each issue. This asymmetric preference structure creates opportunities for integrative trade-offs \citep{davidson2024evaluatinglanguagemodelagency}. Each agent values the issues differently, so they can cooperate by conceding on less-important issues in exchange for gains on more-important issues.
+\end{enumerate}
+
+This work focuses on mixed-motive games, as they require the agent to navigate competitive dynamics while also finding mutually beneficial compromises.
+
+\paragraph{Extended Game Set.} We extend Franceschetti's game set from 3 scenarios, 10 issues, and 23 game combinations to \textbf{5 scenarios, 19 issues, and 48 game combinations}:
+
+\begin{table}[H]
+\centering
+\caption{Negotiation scenarios and their issues.}
+\label{tab:scenarios}
+\begin{tabular}{llc}
+\toprule
+\textbf{Scenario} & \textbf{Issues} & \textbf{Source} \\
+\midrule
+Generic Rental Agreement & 4 issues (rent, duration, deposit, maintenance) & Franceschetti \\
+Generic Loan Agreement & 3 issues (rate, term, collateral) & Franceschetti \\
+Generic Merger & 3 issues (valuation, retention, governance) & Franceschetti \\
+Joint Venture & 4 issues (R\&D budget, revenue split, data sharing, authority) & New \\
+Employment Contract & 5 issues (salary, remote work, training, equity, scope) & New \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For multi-issue training, two issues $(i_1, i_2)$ are drawn at random from the selected scenario's issue pool. Each issue has its own payoff table and importance weighting vector $(\omega_{A,1}, \omega_{A,2})$ sampled from $\{(0.9, 0.1), (0.5, 0.5), (0.1, 0.9)\}$. This variation forces the agent to identify which issue carries higher value in each game and to negotiate trade-offs accordingly. One issue may be distributive while the other is compatible, resulting in a mixed-motive negotiation that combines competitive and cooperative objectives within a single dialogue.
+
+The resulting game combinations fall into three archetypes:
+
+\begin{table}[H]
+\centering
+\caption{Distribution of game archetypes in the training set.}
+\label{tab:archetypes_dist}
+\begin{tabular}{llc}
+\toprule
+\textbf{Archetype} & \textbf{Description} & \textbf{Share} \\
+\midrule
+Compatible & Both agents prefer the same outcome & 7\% \\
+Mixture & Mix of distributive and compatible issues & 69\% \\
+Integrative-Distributive & All contested, but different importance weights & 24\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three game-type configurations are used during training and evaluation:
+\begin{itemize}
+    \item \texttt{multi-game}: All 5 scenarios (main experiment)
+    \item \texttt{cooperative-only}: Joint Venture + Employment Contract only (ablation)
+    \item \texttt{out-of-domain}: Rio Copa scenario (evaluation only)
+\end{itemize}
+
+During the initialization of a scenario, a random game with random issues from a pre-defined set is chosen. This prevents overfitting to one specific case as it includes different kinds of scenarios with unique payoff tables.
+
+
+\subsection{Agent Roles and Initialization}
+
+Two symmetric instances of the same model are assigned roles with distinct names, professions, ages, and personality types. Each agent has access only to its own private payoff table. The system prompt explicitly forbids revealing payoff information to the opponent. (Known issue: the model occasionally leaks payoff values early in training; this behavior diminishes as training progresses.)
+
+At the start of each episode, the initial prompt $s_0$ is constructed by inserting the scenario description, role information, and payoff tables of the sampled issues. The model then conducts a full negotiation consisting of five rounds per agent ($N=5$), alternating roles across episodes to avoid first-mover bias. During LA-GRPO training, the turn $h$ at which the dialogue diverges into multiple continuations is drawn from a geometric distribution $h \sim \mathrm{Geom}(0.3)$, prioritizing early turns where strategic anchors typically emerge \citep{franceschetti2025advantage}.
+
+To provide an intuitive illustration of the negotiation setup, Appendix~\ref{app:example_dialogue} presents a simplified and hypothetical example of a mixed-motive self-play dialogue.
+
+
+\subsection{Training Configurations ($\lambda$ Ablation)}
+
+We train three configurations plus a baseline to isolate the effect of each reward component:
+
+\begin{table}[H]
+\centering
+\caption{$\lambda$ configurations for the ablation study.}
+\label{tab:lambda_configs}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Run} & $\lambda_{\text{self}}$ & $\lambda_{\text{welfare}}$ & $\lambda_{\text{fair}}$ & \textbf{Checkpoint} & \textbf{Steps} \\
+\midrule
+Base Model & --- & --- & --- & none (no LoRA) & 0 \\
+Self-Only & 1.0 & 0.0 & 0.0 & checkpoint-560 & 560 \\
+Fair-Only & 0.0 & 0.0 & 1.0 & checkpoint-560 & 560 \\
+All-Equal & 1.0 & 1.0 & 1.0 & checkpoint-620 & 620 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textcolor{gray}{[PLACEHOLDER: Additional $\lambda$ combinations if available, e.g., $\lambda_{\text{self}}=0.7$, $\lambda_{\text{fair}}=0.3$ as recommended by the literature review on reward weighting.]}
+
+
+\subsection{Technical Setup}
+
+\begin{itemize}
+    \item \textbf{GPU:} NVIDIA RTX 5090 (32\,GB VRAM, CUDA 12.8) / A100 (80\,GB)
+    \item \textbf{Quantization:} BitsAndBytes 4-bit (nf4, double quant, bf16 compute)
+    \item \textbf{Generations per prompt:} $G = 8$
+    \item \textbf{Logging:} Weights \& Biases (\texttt{ratio\_rcoop} as primary training metric)
+    \item \textbf{Evaluation:} Fixed eval dataset with 10 samples per game type (deterministic)
+    \item \textbf{Version control:} Model weights, configuration files, and generated dialogues are version-controlled using GitHub, ensuring reproducibility and transparent documentation of all experiments.
+\end{itemize}
+
+\textcolor{gray}{[PLACEHOLDER: Learning rate, batch size, max\_steps, warmup schedule, optimizer details.]}
+
+
+\subsection{Evaluation Pipeline}
+
+\subsubsection{Negotiation Outcome Metrics}
+
+For each dialogue, the final agreements on all negotiated issues are parsed by the outcome extractor, and agent-specific rewards are computed as in Eq.~\ref{eq:rcoop_normalized}. From these values, additional aggregate metrics are derived.
+
+The \textbf{joint welfare} captures total efficiency, i.e.\ how much total value the negotiation produced for both agents:
+\begin{equation}
+W = R_A + R_B.
+\end{equation}
+
+The \textbf{Nash product} measures fairness and balance between the agents, rewarding outcomes where both achieve high payoffs simultaneously:
+\begin{equation}
+N = R_A \times R_B.
+\end{equation}
+
+In addition, the following \textbf{normalized ratios} are computed, each in $[0, 1]$ and comparable across game types:
+\begin{itemize}
+    \item $\text{ratio\_self} = U_A / \max U_A$
+    \item $\text{ratio\_welfare} = W / \max W$
+    \item $\text{ratio\_nash} = N / \max N$
+    \item $\text{ratio\_rcoop} = R_{\text{coop}} / \max R_{\text{coop}}$ (primary training metric)
+\end{itemize}
+
+\textbf{Agreed-only variants} of all metrics are computed only over successful negotiations, separating deal quality from agreement rate. A \textbf{per-archetype breakdown} further splits metrics by compatible, mixture, and integrative-distributive games.
+
+\subsubsection{Out-of-Domain: Trust Game}
+
+To test generalization, we evaluate on the Trust Game---a 2-turn game-theoretic setting the model was never trained on:
+\begin{itemize}
+    \item \textbf{Rules:} Investor sends $x \in [0, 10]$ points (tripled to $3x$). Trustee returns $y \in [0, 3x]$.
+    \item \textbf{Nash equilibrium:} send $= 0$ (selfish rational). \textbf{Pareto optimum:} send $= 10$, return $= 15$.
+    \item \textbf{Conditions:} \texttt{vs\_base} (trained model vs.\ frozen base) and \texttt{vs\_self} (selfplay).
+    \item 50 games per condition, temperature $= 1.0$, seed $= 42$.
+\end{itemize}
+
+\subsubsection{Robustness and Comparative Evaluation}
+
+Each model---the base Qwen3-14B, GRPO baseline, and cooperative LA-GRPO variant---is evaluated against fixed, selfish, and random opponents to assess adaptability under mixed-motive conditions, following \citet{duan2024gtbenchuncoveringstrategicreasoning}. For each configuration, 100--200 episodes are sampled under identical random seeds. Mean reward, agreement rate, and tokens per reward point are reported with 95\% bootstrap confidence intervals.
+
+\textcolor{gray}{[PLACEHOLDER: Robustness evaluation results not yet available.]}
+
+\subsubsection{Language and Generalization Tests}
+
+To verify that alignment on negotiation tasks does not harm general capabilities, the final models are re-evaluated on MMLU-Pro~\citep{wang2024mmluprorobustchallengingmultitask}, GLUE~\citep{wang2019gluemultitaskbenchmarkanalysis}, IFEval~\citep{zhou2023instructionfollowingevaluationlargelanguage}, EQ-Bench~\citep{paech2024eqbenchemotionalintelligencebenchmark}, and LM-Pragmatics~\citep{hu-etal-2023-fine}.
+
+\textcolor{gray}{[PLACEHOLDER: Benchmark results not yet available. Required for RQ5.]}
+
+\subsubsection{Success Criteria}
+
+A model is considered successful if it achieves higher joint welfare and Nash product than GRPO, maintains comparable benchmark accuracy to the base model, and produces coherent, cooperative dialogues without degeneration.
+
+
+\subsection{Ethical and Practical Considerations}
+
+\textcolor{gray}{[PLACEHOLDER: Brief discussion of transparency, safety implications, and social alignment relevance of cooperative AI negotiators.]}
+
+
+% ============================================================
+% 5. RESULTS AND DISCUSSION
+% ============================================================
+\newpage
+\section{Results and Discussion}
+\label{sec:results}
+
+\subsection{Training Dynamics and Convergence}
+
+Table~\ref{tab:training_dynamics} summarizes the key metrics from the self-only and fair-only training runs at approximately 400 steps, logged via Weights \& Biases.
+
+\begin{table}[H]
+\centering
+\caption{Training metrics at $\sim$400 steps for self-only vs.\ fair-only configurations.}
+\label{tab:training_dynamics}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Self-Only (step $\sim$400)} & \textbf{Fair-Only (step $\sim$400)} \\
+\midrule
+ratio\_self & 0.51--0.79 & 0.44--0.75 \\
+ratio\_welfare & 0.65--0.81 & 0.63--0.85 \\
+ratio\_nash & 0.53--0.64 & 0.41--0.73 \\
+Agreement rate & 0.78--1.0 & \textbf{0.95--1.0} \\
+KL divergence & 0.07--0.13 & 0.22--0.62 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+
+\textbf{Fair-only achieves higher agreement rate} (0.95+ vs.\ 0.78+). The Nash product assigns a reward of zero to failed negotiations ($U_A \times U_B = 0$ whenever either party gets nothing), creating a strong incentive to always reach a deal. This is a central result for \textbf{RQ2}: the reward function directly shapes whether the agent learns to reach agreements.
+
+\textbf{Self-only extracts more for itself} (higher ratio\_self), but at the cost of the opponent's payoff and overall efficiency. This confirms \textbf{H2}.
+
+\textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
+
+\textbf{All-equal performs worst} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$). This confirms \textbf{H3}: the welfare term provides no learning signal in distributive games ($\sim$31\% of the training set), effectively wasting one-third of the gradient budget. The all-equal configuration has no theoretical justification---equal weighting does not correspond to any established social welfare function.
+
+\paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
+
+\textcolor{gray}{[PLACEHOLDER: Learning curve plots from WandB --- ratio\_rcoop over training steps for all three runs.]}
+
+\textcolor{gray}{[PLACEHOLDER: Per-archetype analysis --- how do models perform on compatible vs.\ distributive vs.\ integrative games?]}
+
+
+\subsection{Negotiation Performance}
+
+For context, Table~\ref{tab:luca_results} shows results from Franceschetti's evaluation framework on Llama-3.1-8B with competitive reward ($U_A$ only):
+
+\begin{table}[H]
+\centering
+\caption{Baseline results from \citet{franceschetti2025advantage}'s evaluation (Llama-3.1-8B, competitive reward).}
+\label{tab:luca_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Best Step} & \textbf{Mean Reward} & \textbf{Agreement Rate} \\
+\midrule
+DPO & 2000 & 58.6 & 89.2\% \\
+REFUEL & 4000 & 78.0 & 90.8\% \\
+GRPO (onesided) & 400 & 76.0 & 90.8\% \\
+GRPO turn-level & 1200 & 76.1 & 93.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textcolor{gray}{[PLACEHOLDER: Own evaluation on the same framework with Qwen3-14B models --- self-only, fair-only, all-equal on held-out test games. Table with mean\_reward, std, agreement\_rate analogous to Franceschetti's results.]}
+
+The simplified example in Table~\ref{tab:evaluation_example} illustrates the expected pattern of results in a positive scenario, where the cooperative model achieves both higher individual reward and substantially higher joint welfare and Nash product.
+
+\begin{table}[H]
+\centering
+\caption{Simplified illustrative example of expected evaluation results. Mean negotiation outcomes across models on a mixed-motive multi-issue setup. Each value represents the average over 200 negotiation episodes.
+$R_A$ and $R_B$ denote the individual agent rewards; 
+$W = R_A + R_B$ measures total welfare (efficiency), and 
+$N = R_A \times R_B$ measures fairness and cooperation.}
+\vspace{0.3cm}
+\label{tab:evaluation_example}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & $\mathbf{R_A}$ & $\mathbf{R_B}$ & $\mathbf{W = R_A + R_B}$ & $\mathbf{N = R_A \times R_B}$ \\
+\midrule
+Base (Qwen3-14B)       & 45.3 & 40.7 & 86.0  & 1\,844 \\
+GRPO (zero-sum)       & 52.4 & 37.9 & 90.3  & 1\,986 \\
+LA-GRPO (zero-sum)     & \textbf{54.6} & 36.2 & 90.8  & 1\,977\\
+\textbf{LA-GRPO (ours)} & \textbf{56.8} & \textbf{49.1} & \textbf{105.9} & \textbf{2\,789} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Pareto and Fairness Metrics}
+
+\textcolor{gray}{[PLACEHOLDER: Pareto frontier plots --- $U_A$ vs.\ $U_B$ scatter for different $\lambda$ configurations, ideally per archetype.]}
+
+\textcolor{gray}{[PLACEHOLDER: Nash product comparison across game types. Bar chart or table showing how fair-only approaches the Nash bargaining solution while self-only shifts toward the $U_A$ maximum.]}
+
+
+\subsection{Out-of-Domain Generalization: Trust Game}
+
+To evaluate whether cooperative training generalizes beyond the negotiation domain, we test all four model variants on the Trust Game---a canonical game-theoretic setting the models were never trained on.
+
+\subsubsection{vs\_base: Trained Model vs.\ Frozen Base Model}
+
+\begin{table}[H]
+\centering
+\caption{Trust Game results: trained model as Investor vs.\ frozen base model as Trustee.}
+\label{tab:trust_investor}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+\midrule
+Avg send & 5.00 ($\pm$0.00) & 5.38 ($\pm$0.49) & \textbf{5.48} ($\pm$0.74) & 5.04 ($\pm$0.20) \\
+Investor payoff & 16.02 & 15.04 & 15.08 & 15.86 \\
+Trustee payoff & 3.98 & 5.72 & 5.88 & 4.22 \\
+Social welfare & 20.00 & 20.76 & \textbf{20.96} & 20.08 \\
+Nash product & 62.5 & 80.8 & \textbf{83.1} & 65.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Trust Game results: frozen base model as Investor, trained model as Trustee.}
+\label{tab:trust_trustee}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+\midrule
+Return ratio & 72.4\% & 74.4\% & \textbf{78.8\%} & \textcolor{gray}{[INSERT]} \\
+Investor payoff & 15.86 & 16.16 & \textbf{16.82} & \textcolor{gray}{[INSERT]} \\
+Trustee payoff & 4.14 & 3.84 & 3.18 & \textcolor{gray}{[INSERT]} \\
+Nash product & 64.4 & 59.3 & 47.0 & \textcolor{gray}{[INSERT]} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{vs\_self: Selfplay}
+
+\begin{table}[H]
+\centering
+\caption{Trust Game results: selfplay (trained model plays both roles).}
+\label{tab:trust_selfplay}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+\midrule
+Avg send & 5.00 ($\pm$0.00) & 5.38 ($\pm$0.49) & 5.46 ($\pm$0.73) & 5.04 ($\pm$0.20) \\
+Social welfare & 20.00 & 20.76 & \textbf{20.92} & 20.08 \\
+Nash product & 62.5 & 76.2 & 74.9 & 62.3 \\
+Parse failure & 0\% & 0\% & 0\% & 0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Analysis}
+
+\paragraph{Cooperative training transfers modestly to the Trust Game.} Fair-only as investor sends more ($5.48$ vs.\ $5.00$ baseline), breaking the base model's zero-variance ``always send half'' pattern. The resulting Nash product improvement ($83.1$ vs.\ $62.5$) represents a 33\% increase. The effect is small in absolute terms but points in the right direction: the model learned a cooperative disposition that transfers to an unseen game.
+
+\paragraph{Fair-only learns generosity, not strategic cooperation.} As trustee, the fair-only model returns 78.8\% of received points (vs.\ 72.4\% baseline), making the investor better off but itself worse off (payoff $3.18$ vs.\ $3.98$). In negotiation, generosity is reciprocated; in the Trust Game's trustee role, it is one-directional and exploitable. The model learned cooperative behavior that is context-appropriate in negotiation but suboptimal in the Trust Game's asymmetric structure.
+
+\paragraph{All-equal shows almost no change,} consistent with its weak training performance---the model did not learn a sufficiently strong cooperative signal to transfer.
+
+\paragraph{Frozen opponent limits measurable effects.} The base model investor always sends exactly 5, creating a structural ceiling: social welfare $= 10 + 2 \times \text{send}$ is locked at 20 for the trustee condition. A self-play evaluation or evaluation against diverse opponents would likely reveal larger differences.
+
+\paragraph{Selfplay reveals a nuance.} In selfplay, self-only achieves slightly higher Nash product ($76.2$) than fair-only ($74.9$). When the trustee's generosity benefits itself (same model playing both roles), the dynamic changes: fair-only's tendency to over-return does not lead to exploitation.
+
+
+\subsection{Robustness to Defection (RQ4)}
+
+\textcolor{gray}{[PLACEHOLDER: Tests against adversarial or selfish opponents have not yet been conducted. Planned approaches:}
+\begin{itemize}
+    \item \textcolor{gray}{Cooperative model vs.\ self-only model (cross-evaluation)}
+    \item \textcolor{gray}{Cooperative model vs.\ GPT-4o-mini as opponent}
+    \item \textcolor{gray}{Analysis of whether the cooperative agent can detect and respond to exploitation}
+\end{itemize}
+\textcolor{gray}{]}
+
+
+\subsection{Language Quality and Benchmark Generalization (RQ5)}
+
+\textcolor{gray}{[PLACEHOLDER: MMLU-Pro, GLUE, IFEval, EQ-Bench results have not yet been generated.}
+
+\textcolor{gray}{Expected outcome: Minimal capability loss, since LoRA trains only $\sim$0.26\% of parameters and KL regularization constrains policy drift. However, the elevated KL divergence in the fair-only run (0.22--0.62) warrants careful checking. Degeneration may manifest as repetitive phrasing, typographical artifacts, or overly literal negotiation styles---behaviors documented in earlier GRPO experiments \citep{franceschetti2025advantage}.]}
+
+
+\subsection{Comparative Discussion}
+
+\paragraph{RQ1 (LA-GRPO).} \textcolor{gray}{[PLACEHOLDER: If LA-GRPO runs with cooperative reward exist, compare GRPO vs.\ LA-GRPO. If not, discuss why only GRPO was tested and what is expected from LA-GRPO based on Franceschetti's competitive results.]}
+
+\paragraph{RQ2 (Reward Balance).} Clear evidence supports the hypothesis that the Nash product ($\lambda_{\text{fair}}$) is the most effective cooperative reward component. Fair-only outperforms self-only on agreement rate, welfare, and Nash product, while all-equal underperforms both. This aligns with \citet{caragiannis2019unreasonable}'s theoretical prediction and our hypotheses H1/H3. The welfare term is redundant in distributive games and harmful when given equal weight to the other components.
+
+\paragraph{RQ3 (Metrics).} The normalized \texttt{ratio\_rcoop} serves as the best composite training metric because it is comparable across game types. For evaluation, the Nash product is the single best cooperation metric (captures both efficiency and fairness), with agreement rate as a critical secondary signal.
+
+\paragraph{RQ4 (Robustness).} \textcolor{gray}{[PLACEHOLDER: Awaiting robustness evaluation results.]}
+
+\paragraph{RQ5 (Capabilities).} \textcolor{gray}{[PLACEHOLDER: Awaiting benchmark results.]}
+
+
+% ============================================================
+% 6. CONCLUSION AND FUTURE WORK
+% ============================================================
+\newpage
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+\subsection{Summary of Findings}
+
+This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) LA-GRPO framework from competitive to cooperative negotiation training. The main contributions are:
+
+\begin{enumerate}
+    \item \textbf{Cooperative reward function with game-normalized ratios} that balances self-interest, social welfare, and fairness while ensuring scale-invariant training signal across heterogeneous game types.
+
+    \item \textbf{$\lambda$ ablation study} demonstrating that the Nash product ($\lambda_{\text{fair}}$) is the most effective cooperative term---it simultaneously increases agreement rate and outcome fairness, consistent with theoretical predictions from \citet{Nash1950THEBP} and \citet{caragiannis2019unreasonable}.
+
+    \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 33\% higher Nash product ($83.1$ vs.\ $62.5$).
+
+    \item \textbf{Extended LAMEN environment} with 5 scenarios, 19 issues, and 48 game combinations (vs.\ Franceschetti's 3/10/23), including new Joint Venture and Employment Contract scenarios with integrative issue structures.
+\end{enumerate}
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item \textbf{Single GPU, no vLLM:} Sequential dialogue generation ($\sim$80 forward passes per training step) limits the scale of training. A vLLM colocate implementation plan exists but was not realized.
+
+    \item \textbf{Frozen opponent:} All training uses a frozen local opponent that never adapts. This creates a ceiling on measurable cooperative effects---the opponent's strategy is fixed regardless of the agent's behavior.
+
+    \item \textbf{LA-GRPO not yet trained with cooperative reward:} \textcolor{gray}{[IF APPLICABLE: Only standard GRPO was trained despite LA-GRPO being implemented. RQ1 therefore remains partially answered based on Franceschetti's competitive results rather than direct cooperative evidence.]}
+
+    \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
+
+    \item \textbf{Partial agreement bug:} The \texttt{get\_payoffs()} function returns positive rewards for partial agreements in multi-issue games, slightly distorting the training signal.
+
+    \item \textcolor{gray}{[PLACEHOLDER: Benchmark results missing --- RQ5 not fully answered.]}
+\end{itemize}
+
+\subsection{Future Directions}
+
+\begin{itemize}
+    \item \textbf{Self-play training:} Both agents train simultaneously, enabling emergent cooperation rather than cooperation against a static partner.
+
+    \item \textbf{LA-GRPO with cooperative reward:} Turn-level credit assignment combined with fairness-oriented rewards should provide more precise learning signal for cooperative behavior---the expected synergy of this thesis's two main ideas.
+
+    \item \textbf{Iterated Trust Game:} Multiple rounds with reputation and reciprocity would test whether cooperative training produces robust tit-for-tat-like strategies.
+
+    \item \textbf{vLLM colocate mode:} Batched generation for $>$10$\times$ training speedup, enabling larger-scale experiments and more $\lambda$ configurations.
+
+    \item \textbf{Dynamic $\lambda$ schedules:} Start with high $\lambda_{\text{self}}$ (stability), then gradually increase $\lambda_{\text{fair}}$ as training progresses---analogous to curriculum learning.
+
+    \item \textbf{Opponent diversity:} Training against varied models and checkpoints, following \citet{mckee2020social}'s finding that partner diversity matters more than specific opponent characteristics.
+\end{itemize}
+
+\subsection{Broader Implications}
+
+Cooperative LLM negotiators could be deployed in real-world applications ranging from automated contract negotiation to diplomatic support systems. The balance between cooperation and robustness against exploitation mirrors fundamental challenges in AI alignment: models must be helpful and fair while remaining resistant to manipulation. This thesis provides initial evidence that reinforcement learning with appropriately designed cooperative rewards can shift LLM behavior toward mutual benefit---a small but meaningful step toward AI systems that create value for all parties rather than extracting it from opponents.
+
+
+% ============================================================
+% APPENDIX
+% ============================================================
+\newpage
+\appendix
+
+\section{Negotiation Prompt Template}
+\label{app:prompt}
+\textcolor{gray}{[PLACEHOLDER: System prompt from \texttt{env.py} showing how scenarios, roles, and payoff tables are formatted for the model.]}
+
+\section{Game Configuration Examples}
+\label{app:game_configs}
+\textcolor{gray}{[PLACEHOLDER: Example YAML files for Joint Venture and Employment Contract scenarios, showing issue definitions and payoff tables.]}
+
+\section{Example Mixed-Motive Self-Play Dialogue}
+\label{app:example_dialogue}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=4.7in]{images/mixed-motive-example.png}
+    \caption{Own illustration of a mixed-motive self-play dialogue, inspired by the example in the LAMEN paper \citep{davidson2024evaluatinglanguagemodelagency}}
+    \label{fig:example_dialogue}
+\end{figure}
+
+\section{Trust Game Prompt and Full Results}
+\label{app:trust_game}
+\textcolor{gray}{[PLACEHOLDER: Full prompt used in \texttt{trust\_game\_eval.py} for both investor and trustee roles. Complete tables for all vs\_base and vs\_self conditions with all metrics including standard deviations.]}
+
+\section{WandB Training Curves}
+\label{app:wandb}
+\textcolor{gray}{[PLACEHOLDER: Exported learning curves showing ratio\_rcoop, agreement rate, KL divergence, and per-archetype metrics over training steps for all three runs.]}
+
+\section{Declaration of Authorship}
+\label{app:declaration}
+I hereby declare that I have written this thesis independently and exclusively with the aids and/or support of third parties provided by the Lucerne School of Business, in compliance with the guidelines for the use of AI and GenAI tools. All sources and literature used have been fully cited. In addition, I undertake to protect the confidentiality interests of the client and all other persons or organisations involved and to comply with the copyright regulations of the Lucerne University of Applied Sciences and Arts.
+
+\vspace{0.5cm}
+\noindent Winterthur, May 2026
+
+\begin{figure}[H]
+    \includegraphics[width=1in]{images/signature.png}
+\end{figure}
+
+\noindent\textbf{Michael Gubler}
+
+\section{Statement on the Use of Artificial Intelligence}
+\label{app:ai_statement}
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{
+  @{}>{\raggedright\arraybackslash}p{2.5cm}
+  >{\raggedright\arraybackslash}p{4.1cm}
+  >{\raggedright\arraybackslash}p{2.2cm}
+  >{\raggedright\arraybackslash}p{2cm}@{}}
+\toprule
+\textbf{Purpose of use} &
+\textbf{Description of what AI tools were used for} &
+\textbf{Affected parts} &
+\textbf{AI tools used} \\
+\midrule
+Brainstorming &
+Providing feedback to ideas, helping to find new solutions &
+Chapters 3--6 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Literature research &
+Providing a list of papers with summarization &
+Chapters 2, 4 and 6 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Code development &
+Implementation support for training pipeline, evaluation scripts, and reward functions &
+Chapters 3--5 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Translation &
+Translating a few parts from German to English &
+Whole work, but rarely &
+\href{https://deepl.com}{DeepL Translate} \\
+\addlinespace[0.3em]
+Language improvement &
+Rewrite some sections to improve spelling, wording and flow &
+Whole work &
+\href{https://claude.ai}{Claude} \\
+\bottomrule
+\end{tabularx}
+\caption{Statement on the use of Artificial Intelligence}
+\end{table}
+
+
+% ============================================================
+% BIBLIOGRAPHY
+% ============================================================
+\newpage
+\bibliography{sources.bib}
+
+\end{document}

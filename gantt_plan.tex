@@ -1,0 +1,94 @@
+\documentclass[border=4pt]{standalone}
+\usepackage{pgfgantt}
+\usepackage{xcolor}
+\usepackage{lmodern}
+\usepackage{graphicx} % <--- for \resizebox
+
+\begin{document}
+
+\resizebox{1.2\textwidth}{!}{%  <--- 1.0 = full page width, 1.2 = a bit wider
+\begin{ganttchart}[
+  x unit=0.9cm,              % slightly wider base unit
+  y unit chart=0.48cm,
+  bar height=0.26,
+  group height=0.30,
+  milestone height=0.28,
+  hgrid, vgrid,
+  title height=0.42,
+  title/.append style={fill=gray!10},
+  title label font=\scriptsize\bfseries,
+  bar/.append style={fill=blue!30},
+  group/.append style={fill=blue!12},
+  milestone/.append style={fill=black!70},
+  bar label font=\scriptsize,
+  group label font=\scriptsize\bfseries,
+  group height=0.26,
+group left shift=0pt,
+group right shift=0pt,
+group top shift=0.3pt,
+group peaks height=0pt,
+group/.append style={fill=blue!20, draw=blue!50, line width=.5pt, rounded corners=0pt},
+group top/.append style={fill=blue!20, draw=blue!50}, 
+  milestone label font=\scriptsize,
+]{1}{8}
+
+% ===== Titles =====
+\gantttitle{Work \& Research Plan (Oct 2025 -- May 2026)}{8} \\
+\gantttitle{Oct}{1}
+\gantttitle{Nov}{1}
+\gantttitle{Dec}{1}
+\gantttitle{Jan}{1}
+\gantttitle{Feb}{1}
+\gantttitle{Mar}{1}
+\gantttitle{Apr}{1}
+\gantttitle{May}{1} \\
+
+\newganttchartelement{flatbar}{
+  flatbar/.style={draw=blue!55, fill=blue!45, line width=.4pt, rounded corners=0pt},
+  flatbar top/.style={draw=none, fill=none},        % kill the light overlay entirely
+  flatbar progress/.style={draw=none, fill=none},    % no progress layer
+  flatbar incomplete/.style={draw=none, fill=none},  % no incomplete layer
+  flatbar left shift=0pt,
+  flatbar right shift=0pt,
+  flatbar height=.26
+}
+
+
+% ===== Phase 1 =====
+\ganttgroup{Phase 1: Preparation}{1}{2} \\
+\ganttbar{Reproduce LA-GRPO baseline}{1}{2} \\
+\ganttbar{Review theory \& finalize setup}{1}{2} \\
+
+% ===== Phase 2 =====
+\ganttgroup{Phase 2: Environment}{3}{4} \\
+\ganttbar{LAMEN configurations}{3}{3} \\
+\ganttbar{Implement cooperative reward}{3}{4} \\
+\ganttbar{Tune $\lambda$ parameters}{4}{4} \\
+
+% ===== Phase 3 =====
+\ganttgroup{Phase 3: Training}{5}{6} \\
+\ganttbar{Train GRPO / LA-GRPO}{5}{6} \\
+\ganttbar{Run cooperative tests}{5}{6} \\
+\ganttbar{Track metrics \& convergence}{5}{6} \\
+
+% ===== Phase 4 =====
+\ganttgroup{Phase 4: Evaluation}{7}{7} \\
+\ganttbar{Held-out tests \& robustness}{7}{7} \\
+\ganttbar{Pareto / fairness metrics}{7}{7} \\
+\ganttbar{Benchmarks (MMLU, GLUE, …)}{7}{7} \\
+
+% ===== Phase 5 =====
+\ganttgroup{Phase 5: Writing}{8}{8} \\
+\ganttbar{Integrate results \& write chapters}{8}{8} \\
+\ganttbar{Proofreading \& review}{8}{8} \\
+
+% ===== Final Milestone =====
+\ganttmilestone[
+  milestone label node/.append style={anchor=west, xshift=24mm},
+  milestone/.append style={fill=black!50, draw=black}
+]{Thesis submission (15 May 2026)}{8}
+
+\end{ganttchart}
+}% end resizebox
+
+\end{document}
