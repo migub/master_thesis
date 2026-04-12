@@ -320,7 +320,7 @@ Each component is now in $[0, 1]$ regardless of game type. The function \texttt{
 
 \citet{caragiannis2019unreasonable} showed that Nash welfare simultaneously delivers efficiency and fairness. The welfare term is largely redundant: it only adds unique signal in integrative/compatible games where total value varies but the split is already balanced. In distributive games ($\sim$31\% of our training set), welfare has zero variance and provides no learning signal whatsoever. Self-interest ($\lambda_{\text{self}}$) acts as a stabilizer---without sufficient self-interest weight, the agent can learn degenerate strategies (e.g., always conceding to ensure high Nash product).
 
-Our empirical results confirm this theoretical expectation: the all-equal configuration ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) was the worst performer, while fair-only ($\lambda_{\text{fair}} = 1.0$) achieved the highest agreement rates and most balanced outcomes (see Section~\ref{sec:results}).
+While initial training metrics suggested that the all-equal configuration might underperform due to the welfare term's zero variance in distributive games, the full evaluation (Section~\ref{sec:results}) revealed a more nuanced picture: all-equal ultimately achieved the best overall performance, suggesting that the welfare signal contributes meaningfully in integrative settings despite being uninformative in distributive ones.
 
 
 \subsection{Calculating Local Advantage}
@@ -507,11 +507,12 @@ Base Model & --- & --- & --- & none (no LoRA) & 0 \\
 Self-Only & 1.0 & 0.0 & 0.0 & checkpoint-560 & 560 \\
 Fair-Only & 0.0 & 0.0 & 1.0 & checkpoint-560 & 560 \\
 All-Equal & 1.0 & 1.0 & 1.0 & checkpoint-620 & 620 \\
+Self-Fair-Equal & 0.5 & 0.0 & 0.5 & checkpoint-820 & 820 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textcolor{gray}{[PLACEHOLDER: Additional $\lambda$ combinations if available, e.g., $\lambda_{\text{self}}=0.7$, $\lambda_{\text{fair}}=0.3$ as recommended by the literature review on reward weighting.]}
+The first three configurations isolate the effect of each reward component individually. All-equal combines all three terms with equal weight. Self-fair-equal tests whether the welfare component can be dropped without loss of performance, giving equal weight to self-interest and fairness only.
 
 
 \subsection{Technical Setup}
@@ -622,7 +623,7 @@ KL divergence & 0.07--0.13 & 0.22--0.62 \\
 
 \textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
 
-\textbf{All-equal performs worst} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$). This confirms \textbf{H3}: the welfare term provides no learning signal in distributive games ($\sim$31\% of the training set), effectively wasting one-third of the gradient budget. The all-equal configuration has no theoretical justification---equal weighting does not correspond to any established social welfare function.
+\textbf{All-equal appears weakest in early training metrics} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$ at step $\sim$400). Based on these intermediate metrics, we hypothesized (H3) that the welfare term wastes gradient budget in distributive games. However, as Section~5.2 shows, the full evaluation after convergence tells a different story: all-equal ultimately becomes the best-performing model. This discrepancy highlights the danger of drawing conclusions from noisy mid-training metrics---the welfare signal may take longer to produce its effect but ultimately complements the other reward components.
 
 \paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
 
@@ -756,7 +757,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% \\
 
 \paragraph{Fair-only learns generosity, not strategic cooperation.} As trustee, the fair-only model returns 78.8\% of received points (vs.\ 72.4\% baseline), making the investor better off but itself worse off (payoff $3.18$ vs.\ $3.98$). In negotiation, generosity is reciprocated; in the Trust Game's trustee role, it is one-directional and exploitable. The model learned cooperative behavior that is context-appropriate in negotiation but suboptimal in the Trust Game's asymmetric structure.
 
-\paragraph{All-equal shows almost no change,} consistent with its weak training performance---the model did not learn a sufficiently strong cooperative signal to transfer.
+\paragraph{All-equal shows minimal transfer to the Trust Game,} despite being the strongest model in the negotiation evaluation. This suggests that the Trust Game's simple two-turn structure does not benefit from the multi-objective reward signal that makes all-equal effective in complex multi-issue negotiations.
 
 \paragraph{Frozen opponent limits measurable effects.} The base model investor always sends exactly 5, creating a structural ceiling: social welfare $= 10 + 2 \times \text{send}$ is locked at 20 for the trustee condition. A self-play evaluation or evaluation against diverse opponents would likely reveal larger differences.
 
@@ -785,7 +786,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% \\
 
 \paragraph{RQ1 (LA-GRPO).} \textcolor{gray}{[PLACEHOLDER: If LA-GRPO runs with cooperative reward exist, compare GRPO vs.\ LA-GRPO. If not, discuss why only GRPO was tested and what is expected from LA-GRPO based on Franceschetti's competitive results.]}
 
-\paragraph{RQ2 (Reward Balance).} Clear evidence supports the hypothesis that the Nash product ($\lambda_{\text{fair}}$) is the most effective cooperative reward component. Fair-only outperforms self-only on agreement rate, welfare, and Nash product, while all-equal underperforms both. This aligns with \citet{caragiannis2019unreasonable}'s theoretical prediction and our hypotheses H1/H3. The welfare term is redundant in distributive games and harmful when given equal weight to the other components.
+\paragraph{RQ2 (Reward Balance).} The evaluation reveals a clear ranking: all-equal ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) outperforms all other configurations, followed by fair-only, self-fair-equal, and self-only. This refutes hypothesis H3, which predicted that all-equal would underperform due to the welfare term's zero variance in distributive games. Instead, the combination of all three reward components proves most effective---the welfare term provides complementary signal in integrative settings that Nash product alone does not capture. Removing welfare (self-fair-equal vs.\ all-equal) significantly hurts performance ($p < 0.001$ on agreement rate), and pure self-interest (self-only) fails to improve cooperative metrics over baseline at all. The Nash product remains the strongest \emph{individual} cooperative signal (fair-only $\gg$ self-only), consistent with \citet{caragiannis2019unreasonable}, but combining it with welfare and self-interest yields the best results.
 
 \paragraph{RQ3 (Metrics).} The normalized \texttt{ratio\_rcoop} serves as the best composite training metric because it is comparable across game types. For evaluation, the Nash product is the single best cooperation metric (captures both efficiency and fairness), with agreement rate as a critical secondary signal.
 
@@ -808,7 +809,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{enumerate}
     \item \textbf{Cooperative reward function with game-normalized ratios} that balances self-interest, social welfare, and fairness while ensuring scale-invariant training signal across heterogeneous game types.
 
-    \item \textbf{$\lambda$ ablation study} demonstrating that the Nash product ($\lambda_{\text{fair}}$) is the most effective cooperative term---it simultaneously increases agreement rate and outcome fairness, consistent with theoretical predictions from \citet{Nash1950THEBP} and \citet{caragiannis2019unreasonable}.
+    \item \textbf{$\lambda$ ablation study} across five reward configurations demonstrating that combining all three objectives ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) yields the best overall performance: $+21\%$ on $U_A$, $+14$ percentage points on agreement rate, and $+18\%$ on Nash product over the base model. The Nash product is the strongest individual cooperative signal (fair-only $\gg$ self-only), but dropping the welfare component significantly hurts performance, refuting the initial hypothesis that welfare would be redundant.
 
     \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 33\% higher Nash product ($83.1$ vs.\ $62.5$).
 
