@@ -602,18 +602,6 @@ A model is considered successful if it achieves higher joint welfare and Nash pr
 
 Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all four $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with a running average (window $= 60$ steps).
 
-\paragraph{Key findings.}
-
-\textbf{Fair-only achieves higher agreement rate} (0.95+ vs.\ 0.78+). Note that both reward functions assign zero to failed negotiations ($U_A = 0$ implies $R_{\text{coop}} = 0$ regardless of $\lambda$ configuration). The difference lies in how they reward \emph{successful} negotiations: under self-only, the agent can obtain high reward from lopsided deals (e.g., $U_A = 80, U_B = 10$), but such aggressive offers are more likely to be rejected by the opponent. Under Nash product, only balanced outcomes yield high reward ($50 \times 50 = 2500 \gg 80 \times 10 = 800$), so the agent learns to propose offers the opponent is willing to accept. This is a central result for \textbf{RQ2}: the reward function directly shapes negotiation behavior and agreement rates.
-
-\textbf{Self-only extracts more for itself} (higher ratio\_self), but at the cost of the opponent's payoff and overall efficiency. This confirms \textbf{H2}.
-
-\textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
-
-\textbf{All-equal appears weakest in early training metrics} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$ at step $\sim$400). Based on these intermediate metrics, H3 hypothesized that the welfare term wastes gradient budget in distributive games. However, as Section~5.2 shows, the full evaluation after convergence tells a different story: all-equal ultimately becomes the best-performing model. This discrepancy highlights the danger of drawing conclusions from noisy mid-training metrics---the welfare signal may take longer to produce its effect but ultimately complements the other reward components.
-
-\paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
@@ -627,6 +615,18 @@ Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the t
     \caption{Deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio. Self-only achieves the highest individual payoff on agreed deals, while fair-only leads on balanced outcomes.}
     \label{fig:training_quality}
 \end{figure}
+
+\paragraph{Key findings.}
+
+\textbf{Fair-only achieves higher agreement rate} (0.95+ vs.\ 0.78+). Note that both reward functions assign zero to failed negotiations ($U_A = 0$ implies $R_{\text{coop}} = 0$ regardless of $\lambda$ configuration). The difference lies in how they reward \emph{successful} negotiations: under self-only, the agent can obtain high reward from lopsided deals (e.g., $U_A = 80, U_B = 10$), but such aggressive offers are more likely to be rejected by the opponent. Under Nash product, only balanced outcomes yield high reward ($50 \times 50 = 2500 \gg 80 \times 10 = 800$), so the agent learns to propose offers the opponent is willing to accept. This is a central result for \textbf{RQ2}: the reward function directly shapes negotiation behavior and agreement rates.
+
+\textbf{Self-only extracts more for itself} (higher ratio\_self), but at the cost of the opponent's payoff and overall efficiency. This confirms \textbf{H2}.
+
+\textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
+
+\textbf{All-equal appears weakest in early training metrics} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$ at step $\sim$400). Based on these intermediate metrics, H3 hypothesized that the welfare term wastes gradient budget in distributive games. However, as Section~5.2 shows, the full evaluation after convergence tells a different story: all-equal ultimately becomes the best-performing model. This discrepancy highlights the danger of drawing conclusions from noisy mid-training metrics---the welfare signal may take longer to produce its effect but ultimately complements the other reward components.
+
+\paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
 
 \textcolor{gray}{[PLACEHOLDER: Per-archetype analysis --- how do models perform on compatible vs.\ distributive vs.\ integrative games?]}
 
