@@ -600,24 +600,7 @@ A model is considered successful if it achieves higher joint welfare and Nash pr
 
 \subsection{Training Dynamics and Convergence}
 
-Table~\ref{tab:training_dynamics} summarizes the key metrics from the self-only and fair-only training runs at approximately 400 steps, logged via Weights \& Biases.
-
-\begin{table}[H]
-\centering
-\caption{Training metrics at $\sim$400 steps for self-only vs.\ fair-only configurations.}
-\label{tab:training_dynamics}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Metric} & \textbf{Self-Only (step $\sim$400)} & \textbf{Fair-Only (step $\sim$400)} \\
-\midrule
-ratio\_self & 0.51--0.79 & 0.44--0.75 \\
-ratio\_welfare & 0.65--0.81 & 0.63--0.85 \\
-ratio\_nash & 0.53--0.64 & 0.41--0.73 \\
-Agreement rate & 0.78--1.0 & \textbf{0.95--1.0} \\
-KL divergence & 0.07--0.13 & 0.22--0.62 \\
-\bottomrule
-\end{tabular}
-\end{table}
+Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all four $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with a running average (window $= 60$ steps).
 
 \paragraph{Key findings.}
 
@@ -634,7 +617,7 @@ KL divergence & 0.07--0.13 & 0.22--0.62 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
-    \caption{Negotiation performance during training across four $\lambda$ configurations. All curves are smoothed with a running average (window = 25 steps). Shaded regions indicate variance. Left: mean agent payoff $U_A$. Center: agreement rate. Right: normalized Nash ratio. All-equal and fair-only show the strongest improvements, while self-only improves $U_A$ but not cooperative metrics.}
+    \caption{Negotiation performance during training across four $\lambda$ configurations. All curves are smoothed with a running average (window $= 60$ steps). Shaded regions indicate variance. Left: mean agent payoff $U_A$. Center: agreement rate. Right: normalized Nash ratio. All-equal and fair-only show the strongest improvements, while self-only improves $U_A$ but not cooperative metrics.}
     \label{fig:training_performance}
 \end{figure}
 
