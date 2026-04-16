@@ -520,7 +520,7 @@ The first three configurations isolate the effect of each reward component indiv
 
 For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. A fixed evaluation dataset containing 10 samples per game type provides deterministic, comparable evaluation across runs. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
 
-Table~\ref{tab:hyperparams} lists the full training hyperparameters, which are shared across all $\lambda$ configurations. The optimizer is AdamW (fused variant) with a learning rate of $5 \times 10^{-5}$ and a constant-with-warmup schedule (10 warmup steps). The KL penalty coefficient $\beta = 0.08$ constrains the policy from diverging too far from the frozen reference model, while the PPO clipping threshold $\epsilon = 0.2$ bounds the policy ratio. Generation temperature is set to $1.0$ to encourage diverse dialogue continuations across the $G = 8$ samples. Gradient checkpointing is enabled to reduce memory usage at the cost of slightly longer step times.
+Table~\ref{tab:hyperparams} lists the full training hyperparameters, which are shared across all $\lambda$ configurations. The optimizer is AdamW (fused variant) with a learning rate of $5 \times 10^{-5}$ and a constant-with-warmup schedule (10 warmup steps). The KL penalty coefficient $\beta = 0.08$ constrains the policy from diverging too far from the frozen reference model, while the clipping threshold $\epsilon = 0.2$ bounds the importance ratio $\pi_\theta / \pi_{\text{old}}$ to $[1 - \epsilon, 1 + \epsilon]$ in the GRPO loss. In practice, clipping never triggered during training (clip ratio remained at 0 across all runs), indicating that the LoRA-based updates are sufficiently conservative. Generation temperature is set to $1.0$ to encourage diverse dialogue continuations across the $G = 8$ samples. Gradient checkpointing is enabled to reduce memory usage at the cost of slightly longer step times.
 
 \begin{table}[H]
 \centering
@@ -537,7 +537,7 @@ LR schedule & Constant with warmup (10 steps) \\
 Weight decay & 0 \\
 Batch size & 8 per device, gradient accumulation $= 1$ \\
 KL coefficient ($\beta$) & 0.08 \\
-PPO clip ($\epsilon$) & 0.2 \\
+Clipping threshold ($\epsilon$) & 0.2 \\
 Max grad norm & 1.0 \\
 Generation temperature & 1.0 \\
 Generations per prompt ($G$) & 8 \\
