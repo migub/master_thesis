@@ -89,7 +89,7 @@ While zero-sum games are analytically convenient, many real-world negotiations a
 \par
 Most existing research and alignment of LLM-based negotiators has focused on competitive or zero-sum settings. \citet{jiang-akcakir-2025-explicit} noted that in the absence of explicit negotiation instructions, LLMs showed a 50-90\% lower success rate than in instructed scenarios. In other words, current LLMs are trained to compete for the largest share, with little attention to fairness or joint outcomes. Human negotiation theory warns of a ``negotiator's dilemma,'' where tactics for claiming value (hard bargaining and withholding information) directly undermine those for creating value (open sharing and building trust). If both parties compete relentlessly, the result is often a dead end or a mediocre compromise, whereas mutual cooperation could have yielded a better Pareto-optimal outcome \citep{lax1992manager_summary}. Notably, a recent AI negotiation competition found that agents using warm and cooperative communication achieved higher joint gains and more agreements, whereas overly dominant agents frequently stalemated \citep{vaccaro2025advancingainegotiationsnew}.
 \par
-Since I believe that AI negotiators will soon enter the real world en masse, it is important to increase value creation for everyone by training LLMs to both compete and cooperate intuitively -- without the need of explicit prior instructions.
+As AI negotiators are expected to enter the real world en masse in the near future, it is important to increase value creation for everyone by training LLMs to both compete and cooperate intuitively -- without the need of explicit prior instructions.
 
 
 \subsection{Thematic Scope}
@@ -153,7 +153,7 @@ In zero-sum settings, $U_A + U_B$ is approximately constant---one agent's gain i
 
 \paragraph{Nash Bargaining Solution.} \citet{Nash1950THEBP} introduced the Nash bargaining solution, defining fair and Pareto-efficient outcomes as the product of agents' utilities. The product $U_A \times U_B$ is the unique solution satisfying four axioms: Pareto efficiency, symmetry, scale invariance, and independence of irrelevant alternatives. This makes the Nash product a theoretically grounded single metric for cooperative success.
 
-\paragraph{Unreasonable Fairness of Nash Welfare.} \citet{caragiannis2019unreasonable} demonstrated a remarkable result: maximizing Nash welfare (the product of utilities) simultaneously achieves envy-freeness up to one good \emph{and} Pareto efficiency in allocation problems. They call this ``unreasonable'' because Nash welfare was designed for efficiency, yet it also provides strong fairness guarantees. This provides the strongest theoretical argument for using the Nash product as the dominant cooperative term in our reward function---it captures both efficiency and fairness in a single metric.
+\paragraph{Unreasonable Fairness of Nash Welfare.} \citet{caragiannis2019unreasonable} demonstrated a remarkable result: maximizing Nash welfare (the product of utilities) simultaneously achieves envy-freeness up to one good \emph{and} Pareto efficiency in allocation problems. They call this ``unreasonable'' because Nash welfare was designed for efficiency, yet it also provides strong fairness guarantees. This provides the strongest theoretical argument for using the Nash product as the dominant cooperative term in the reward function of this work---it captures both efficiency and fairness in a single metric.
 
 \paragraph{Integrative Bargaining.} Unlike single-issue distributive bargaining, multi-issue negotiations allow for log-rolling and package deals where parties trade concessions across issues with different importance weights \citep{lax1992manager_summary}. This is the mechanism through which cooperative agents can create value rather than merely distribute it.
 
@@ -193,7 +193,7 @@ LA-GRPO & GRPO + turn-level sampling & $G$ continuations from turn $h$ & Online 
 
 \paragraph{Opponent Diversity.} \citet{mckee2020social} showed that diversity of training partners matters more than specific opponent characteristics for developing robust social behavior.
 
-\paragraph{Linear Scalarization Limits.} \citet{hayes2022practical} established that linear scalarization can only discover solutions on the convex hull of the Pareto front. Our reward formula partially circumvents this limitation because the Nash product term ($U_A \times U_B$) is inherently non-linear.
+\paragraph{Linear Scalarization Limits.} \citet{hayes2022practical} established that linear scalarization can only discover solutions on the convex hull of the Pareto front. The reward formula used in this work partially circumvents this limitation because the Nash product term ($U_A \times U_B$) is inherently non-linear.
 
 \paragraph{Strategic Reasoning in LLMs.} \citet{duan2024gtbenchuncoveringstrategicreasoning} evaluated LLMs' strategic reasoning abilities across diverse game-theoretic environments, highlighting limitations in long-term planning and strategic adaptation. \citet{jiang-akcakir-2025-explicit} empirically showed that explicit cooperation cues substantially improve negotiation success and human-likeness in LLM interactions. \citet{vaccaro2025advancingainegotiationsnew} reported large-scale evidence that agents using cooperative and empathetic language achieve higher joint gains than purely competitive agents.
 
@@ -258,7 +258,7 @@ In \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advanta
 \par
 In contrast, the present work extends this reward structure to non-zero-sum (mixed-motive) negotiation. Adapting LA-GRPO to this setting requires redefining the scalar reward so that it reflects not only the agent's own payoff but also the collective efficiency and equity of the final outcome.
 \par
-To formalize this, we introduce three cooperative criteria commonly used in bargaining theory and multi-agent reinforcement learning:
+To formalize this, three cooperative criteria commonly used in bargaining theory and multi-agent reinforcement learning are introduced:
 
 \begin{enumerate}[label={}, leftmargin=0pt]
     \item \textbf{Self-utility ($U_A$):} The agent's own payoff from the agreed outcome. This term preserves an incentive for self-interested performance. This is what was used by \citet{franceschetti2025advantage}.
@@ -302,7 +302,7 @@ Additional scale issues arise across game types. A distributive game may have $\
 
 \subsubsection{Solution: Game-Normalized Ratios}
 
-We compute $R_{\text{coop}}$ using game-normalized ratios instead of raw values:
+$R_{\text{coop}}$ is computed using game-normalized ratios instead of raw values:
 
 \begin{equation}
 R_{\text{coop}} = \lambda_{\text{self}} \cdot \frac{U_A}{\max U_A} + \lambda_{\text{welfare}} \cdot \frac{U_A + U_B}{\max W} + \lambda_{\text{fair}} \cdot \frac{U_A \cdot U_B}{\max N}
@@ -318,16 +318,16 @@ Each component is now in $[0, 1]$ regardless of game type. The function \texttt{
 
 \subsubsection{Why Nash Product Should Dominate}
 
-\citet{caragiannis2019unreasonable} showed that Nash welfare simultaneously delivers efficiency and fairness. The welfare term is largely redundant: it only adds unique signal in integrative/compatible games where total value varies but the split is already balanced. In distributive games ($\sim$31\% of our training set), welfare has zero variance and provides no learning signal whatsoever. Self-interest ($\lambda_{\text{self}}$) acts as a stabilizer---without sufficient self-interest weight, the agent can learn degenerate strategies (e.g., always conceding to ensure high Nash product).
+\citet{caragiannis2019unreasonable} showed that Nash welfare simultaneously delivers efficiency and fairness. The welfare term is largely redundant: it only adds unique signal in integrative/compatible games where total value varies but the split is already balanced. In distributive games ($\sim$31\% of the training set), welfare has zero variance and provides no learning signal whatsoever. Self-interest ($\lambda_{\text{self}}$) acts as a stabilizer---without sufficient self-interest weight, the agent can learn degenerate strategies (e.g., always conceding to ensure high Nash product).
 
 While initial training metrics suggested that the all-equal configuration might underperform due to the welfare term's zero variance in distributive games, the full evaluation (Section~\ref{sec:results}) revealed a more nuanced picture: all-equal ultimately achieved the best overall performance, suggesting that the welfare signal contributes meaningfully in integrative settings despite being uninformative in distributive ones.
 
 
 \subsection{Calculating Local Advantage}
 
-Having defined the cooperative reward $R_{\text{coop}}$, we can now compute the local advantage signal used by LA-GRPO to assign credit and update the policy.
+Having defined the cooperative reward $R_{\text{coop}}$, the local advantage signal used by LA-GRPO to assign credit and update the policy can now be computed.
 \par
-To isolate the learning signal for a particular dialogue turn, we follow \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) Local Advantage Group Relative Policy Optimization procedure. A turn $h$ is sampled from a geometric distribution $h \sim \mathrm{Geom}(0.3)$, bounded by $\max\_rounds - 1$. Rounds $0 \ldots h-1$ are played once as a shared prefix, identical across all $G$ generations. From round $h$ onward, $G$ independent continuations are generated.
+To isolate the learning signal for a particular dialogue turn, this work follows \citeauthor{franceschetti2025advantage}'s (\citeyear{franceschetti2025advantage}) Local Advantage Group Relative Policy Optimization procedure. A turn $h$ is sampled from a geometric distribution $h \sim \mathrm{Geom}(0.3)$, bounded by $\max\_rounds - 1$. Rounds $0 \ldots h-1$ are played once as a shared prefix, identical across all $G$ generations. From round $h$ onward, $G$ independent continuations are generated.
 
 The idea is to sample several continuations from the same dialogue context and measure how each continuation's final reward compares to the group's weighted average reward:
 
@@ -360,7 +360,7 @@ The first term maximizes the log-probability of tokens belonging to high-advanta
 Only a low-rank subset of parameters---the \textbf{LoRA adapters}---is trainable \citep{hu2021loralowrankadaptationlarge}. This modular fine-tuning strategy allows efficient weight updates on limited hardware while preserving the base model's general linguistic competence.
 
 \paragraph{Choice of Model.}
-\citet{franceschetti2025advantage} used LLaMA~3.1~8B as the base model for both negotiation agents. In this work, we instead use \textbf{Qwen3-14B-Instruct} for three reasons. First, cooperative negotiation places higher demands on reasoning and pragmatic language use than competitive bargaining: the agent must simultaneously track its own payoff, infer the opponent's preferences, and identify mutually beneficial trade-offs. A larger model (14B vs.\ 8B parameters) provides greater capacity for this multi-objective reasoning. Second, Qwen3 is a more recent model family with stronger instruction-following capabilities. This proved critical in early experiments: LLaMA~3.1~8B frequently violated the negotiation protocol by leaking private payoff table values to the opponent (e.g., stating ``R\&D budget of \$8M gives me a payoff of 40'') and by inventing issues that did not exist in the scenario configuration. Both behaviors are particularly damaging for cooperative training, where the reward signal depends on the agent negotiating \textit{within} the defined game structure. A model that fabricates issues or reveals its payoff function undermines the integrity of the training loop, as the evaluator cannot correctly extract outcomes from such dialogues. Qwen3-14B exhibited these problems far less frequently, and the remaining instances diminished further as training progressed. Third, with 4-bit quantization (BitsAndBytes nf4), Qwen3-14B fits comfortably on a single RTX~5090 (32\,GB) or A100 (80\,GB), making it practical for the single-GPU training pipeline used in this work. The LoRA configuration ($r=8$, $\alpha=16$, dropout$=0.1$) is kept identical to Franceschetti's to isolate the effect of the model change from other variables.
+\citet{franceschetti2025advantage} used LLaMA~3.1~8B as the base model for both negotiation agents. In this work, \textbf{Qwen3-14B-Instruct} is used instead for three reasons. First, cooperative negotiation places higher demands on reasoning and pragmatic language use than competitive bargaining: the agent must simultaneously track its own payoff, infer the opponent's preferences, and identify mutually beneficial trade-offs. A larger model (14B vs.\ 8B parameters) provides greater capacity for this multi-objective reasoning. Second, Qwen3 is a more recent model family with stronger instruction-following capabilities. This proved critical in early experiments: LLaMA~3.1~8B frequently violated the negotiation protocol by leaking private payoff table values to the opponent (e.g., stating ``R\&D budget of \$8M gives me a payoff of 40'') and by inventing issues that did not exist in the scenario configuration. Both behaviors are particularly damaging for cooperative training, where the reward signal depends on the agent negotiating \textit{within} the defined game structure. A model that fabricates issues or reveals its payoff function undermines the integrity of the training loop, as the evaluator cannot correctly extract outcomes from such dialogues. Qwen3-14B exhibited these problems far less frequently, and the remaining instances diminished further as training progressed. Third, with 4-bit quantization (BitsAndBytes nf4), Qwen3-14B fits comfortably on a single RTX~5090 (32\,GB) or A100 (80\,GB), making it practical for the single-GPU training pipeline used in this work. The LoRA configuration ($r=8$, $\alpha=16$, dropout$=0.1$) is kept identical to Franceschetti's to isolate the effect of the model change from other variables.
 
 The specific model and LoRA configuration are:
 
@@ -377,7 +377,7 @@ After each policy update, the LoRA weights are merged with the frozen base model
 
 \subsection{Expected Effects and Hypotheses}
 
-Based on the theoretical framework and reward design, we formulate the following hypotheses:
+Based on the theoretical framework and reward design, the following hypotheses are formulated:
 
 \begin{enumerate}[label=\textbf{H\arabic*:}]
     \item Fair-only ($\lambda_{\text{fair}}=1.0$) achieves higher agreement rate than self-only ($\lambda_{\text{self}}=1.0$), because the Nash product rewards balanced outcomes where both parties benefit. Under self-only, the agent can obtain high reward by squeezing the opponent (e.g., $U_A=80, U_B=10$), but such lopsided offers are more likely to be rejected. Under Nash product, only mutually beneficial agreements yield high reward ($50 \times 50 = 2500 \gg 80 \times 10 = 800$), so the agent learns to make offers the opponent is willing to accept.
@@ -432,7 +432,7 @@ Depending on how the payoff values align between the two agents, LAMEN categoriz
 
 This work focuses on \textit{mixed-motive} games---games in which agents face both competitive and cooperative incentives simultaneously. In game theory, mixed-motive describes any setting where players' interests are neither fully opposed (as in pure distributive games) nor fully aligned (as in pure compatible games), but contain elements of both. In the LAMEN framework, the \textit{Mixture} and \textit{Integrative-Distributive} archetypes are mixed-motive: both require the agent to navigate competitive dynamics on some issues while finding mutually beneficial trade-offs on others. The training set also includes a small proportion of purely compatible games, where both agents' interests are fully aligned.
 
-\paragraph{Extended Game Set.} We extend Franceschetti's game set from 3 scenarios, 10 issues, and 23 game combinations to \textbf{5 scenarios, 19 issues, and 47 game configurations} (19 single-issue and 28 two-issue, with one conflicting combination excluded):
+\paragraph{Extended Game Set.} This work extends Franceschetti's game set from 3 scenarios, 10 issues, and 23 game combinations to \textbf{5 scenarios, 19 issues, and 47 game configurations} (19 single-issue and 28 two-issue, with one conflicting combination excluded):
 
 \begin{table}[H]
 \centering
@@ -470,7 +470,7 @@ Integrative-Distributive & All contested, but different importance weights & 24\
 \end{tabular}
 \end{table}
 
-This distribution is a deterministic consequence of the issue pool composition: each issue has a fixed payoff structure (distributive or compatible), and the archetype of a two-issue game is fully determined by the types of its constituent issues. The original issues for the rental, loan, and merger scenarios are inherited from the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}; the joint venture and employment contract issues were designed following the same principles. While alternative issue designs could have produced a more uniform archetype distribution, the issues were deliberately designed for \textit{realism} rather than balance: in an actual employment contract, salary and equity are inherently distributive (one party's gain is the other's cost), while training budget is naturally compatible (both employer and employee benefit from skill development). Artificially adding compatible issues to equalize the distribution would have sacrificed this ecological validity. Moreover, the resulting dominance of mixture games is desirable for this work, since these are precisely the mixed-motive settings that require agents to balance competitive and cooperative behavior---the core challenge this thesis addresses. Purely compatible games are trivially solved (both agents want the same outcome), and purely distributive games were already extensively studied by \citet{franceschetti2025advantage}. \citet{davidson2024evaluatinglanguagemodelagency} similarly found that cooperative bargaining games proved to be the most challenging for LLMs, further motivating their prominence in our training set.
+This distribution is a deterministic consequence of the issue pool composition: each issue has a fixed payoff structure (distributive or compatible), and the archetype of a two-issue game is fully determined by the types of its constituent issues. The original issues for the rental, loan, and merger scenarios are inherited from the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}; the joint venture and employment contract issues were designed following the same principles. While alternative issue designs could have produced a more uniform archetype distribution, the issues were deliberately designed for \textit{realism} rather than balance: in an actual employment contract, salary and equity are inherently distributive (one party's gain is the other's cost), while training budget is naturally compatible (both employer and employee benefit from skill development). Artificially adding compatible issues to equalize the distribution would have sacrificed this ecological validity. Moreover, the resulting dominance of mixture games is desirable for this work, since these are precisely the mixed-motive settings that require agents to balance competitive and cooperative behavior---the core challenge this thesis addresses. Purely compatible games are trivially solved (both agents want the same outcome), and purely distributive games were already extensively studied by \citet{franceschetti2025advantage}. \citet{davidson2024evaluatinglanguagemodelagency} similarly found that cooperative bargaining games proved to be the most challenging for LLMs, further motivating their prominence in the training set.
 
 Three game-type configurations are used during training and evaluation:
 \begin{itemize}
@@ -493,7 +493,7 @@ To provide an intuitive illustration of the negotiation setup, Appendix~\ref{app
 
 \subsection{Training Configurations ($\lambda$ Ablation)}
 
-We train three configurations plus a baseline to isolate the effect of each reward component:
+Four $\lambda$ configurations are trained alongside a base-model baseline to isolate the effect of each reward component:
 
 \begin{table}[H]
 \centering
@@ -557,7 +557,7 @@ In addition, the following \textbf{normalized ratios} are computed, each in $[0,
 
 \subsubsection{Out-of-Domain: Trust Game}
 
-To test generalization, we evaluate on the Trust Game---a 2-turn game-theoretic setting the model was never trained on:
+To test generalization, the Trust Game is used as an out-of-domain evaluation---a 2-turn game-theoretic setting the model was never trained on:
 \begin{itemize}
     \item \textbf{Rules:} Investor sends $x \in [0, 10]$ points (tripled to $3x$). Trustee returns $y \in [0, 3x]$.
     \item \textbf{Nash equilibrium:} send $= 0$ (selfish rational). \textbf{Pareto optimum:} send $= 10$, return $= 15$.
@@ -623,7 +623,7 @@ KL divergence & 0.07--0.13 & 0.22--0.62 \\
 
 \textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
 
-\textbf{All-equal appears weakest in early training metrics} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$ at step $\sim$400). Based on these intermediate metrics, we hypothesized (H3) that the welfare term wastes gradient budget in distributive games. However, as Section~5.2 shows, the full evaluation after convergence tells a different story: all-equal ultimately becomes the best-performing model. This discrepancy highlights the danger of drawing conclusions from noisy mid-training metrics---the welfare signal may take longer to produce its effect but ultimately complements the other reward components.
+\textbf{All-equal appears weakest in early training metrics} (agreed/ratio\_self $= 0.423$, ratio\_nash $= 0.386$ at step $\sim$400). Based on these intermediate metrics, H3 hypothesized that the welfare term wastes gradient budget in distributive games. However, as Section~5.2 shows, the full evaluation after convergence tells a different story: all-equal ultimately becomes the best-performing model. This discrepancy highlights the danger of drawing conclusions from noisy mid-training metrics---the welfare signal may take longer to produce its effect but ultimately complements the other reward components.
 
 \paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
 
@@ -696,7 +696,7 @@ integrative distributive & 47.5 & 70.0 & 75.0 & \textbf{95.0} & 72.5 \\
 
 \subsection{Out-of-Domain Generalization: Trust Game}
 
-To evaluate whether cooperative training generalizes beyond the negotiation domain, we test all four model variants on the Trust Game---a canonical game-theoretic setting the models were never trained on.
+To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on.
 
 \subsubsection{vs\_base: Trained Model vs.\ Frozen Base Model}
 
