@@ -518,21 +518,20 @@ Self-Fair-Equal & 0.5 & 0.0 & 0.5 & checkpoint-820 & 820 \\
 
 The first three configurations isolate the effect of each reward component individually. All-equal combines all three terms with equal weight. Self-fair-equal tests whether the welfare component can be dropped without loss of performance, giving equal weight to self-interest and fairness only.
 
+For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. A fixed evaluation dataset containing 10 samples per game type provides deterministic, comparable evaluation across runs. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
+
+\textcolor{gray}{[PLACEHOLDER: Learning rate, batch size, max\_steps, warmup schedule, optimizer details.]}
+
 
 \subsection{Technical Setup}
 
 \paragraph{Infrastructure and GPU Migration.}
 \citet{franceschetti2025advantage}'s original training pipeline required four GPUs: two NVIDIA A100s running vLLM inference servers (one for the policy model $\pi_\theta$ and one for the frozen opponent $\pi_c$) and two additional A100s for gradient computation. This setup enabled batched dialogue generation via vLLM's paged attention mechanism \citep{kwon2023efficientmemorymanagementlarge}, significantly accelerating the sampling of multiple continuations per training step.
 
-Due to cost constraints, this work rewrites the training pipeline to operate on a \textbf{single GPU}---either an NVIDIA RTX~5090 (32\,GB VRAM) or an A100 (80\,GB). Both the policy model and the frozen opponent run on the same device, with LoRA adapters enabled or disabled to switch between the two roles. This eliminates the need for inter-GPU communication and multi-server orchestration, substantially reducing infrastructure complexity and cost. The trade-off is the loss of vLLM: since a single GPU cannot simultaneously host a vLLM inference server and perform gradient updates, dialogue generation falls back to sequential \texttt{model.generate()} calls. Each training step requires approximately 80 forward passes ($G = 8$ continuations $\times$ up to 10 dialogue turns), resulting in step times of 100--150 seconds. While a vLLM colocate mode was planned to recover batched generation on a single GPU, it was not implemented within the scope of this thesis.
+Due to cost constraints, this work rewrites the training pipeline to operate on a \textbf{single GPU}. Training is performed on a rented NVIDIA A100 (80\,GB), which provides sufficient memory for the model, LoRA adapters, optimizer states, and the long KV caches produced by multi-turn dialogues. Evaluation and smaller experiments are run on a local NVIDIA RTX~5090 (32\,GB), which is adequate for inference but lacks the memory headroom required for stable gradient accumulation during training. Both the policy model and the frozen opponent run on the same device, with LoRA adapters enabled or disabled to switch between the two roles. This eliminates the need for inter-GPU communication and multi-server orchestration, substantially reducing infrastructure complexity and cost. The trade-off is the loss of vLLM: since a single GPU cannot simultaneously host a vLLM inference server and perform gradient updates, dialogue generation falls back to sequential \texttt{model.generate()} calls. Each training step requires approximately 80 forward passes ($G = 8$ continuations $\times$ up to 10 dialogue turns), resulting in step times of 100--150 seconds. While a vLLM colocate mode was planned to recover batched generation on a single GPU, it was not implemented within the scope of this thesis.
 
 \paragraph{Model and Quantization.}
 To fit Qwen3-14B on a single GPU, BitsAndBytes 4-bit quantization is applied (nf4 data type, double quantization, bf16 compute dtype). This reduces the model's memory footprint from $\sim$28\,GB (fp16) to $\sim$9\,GB, leaving sufficient headroom for LoRA adapters, optimizer states, and KV cache during generation.
-
-\paragraph{Training Configuration.}
-For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. A fixed evaluation dataset containing 10 samples per game type provides deterministic, comparable evaluation across runs. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
-
-\textcolor{gray}{[PLACEHOLDER: Learning rate, batch size, max\_steps, warmup schedule, optimizer details.]}
 
 
 \subsection{Evaluation Pipeline}
