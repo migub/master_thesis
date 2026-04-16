@@ -631,7 +631,19 @@ KL divergence & 0.07--0.13 & 0.22--0.62 \\
 
 \paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
 
-\textcolor{gray}{[PLACEHOLDER: Learning curve plots from WandB --- ratio\_rcoop over training steps for all three runs.]}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
+    \caption{Negotiation performance during training across four $\lambda$ configurations. All curves are smoothed with a running average (window = 25 steps). Shaded regions indicate variance. Left: mean agent payoff $U_A$. Center: agreement rate. Right: normalized Nash ratio. All-equal and fair-only show the strongest improvements, while self-only improves $U_A$ but not cooperative metrics.}
+    \label{fig:training_performance}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/training_curves_quality.pdf}
+    \caption{Deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio. Self-only achieves the highest individual payoff on agreed deals, while fair-only leads on balanced outcomes.}
+    \label{fig:training_quality}
+\end{figure}
 
 \textcolor{gray}{[PLACEHOLDER: Per-archetype analysis --- how do models perform on compatible vs.\ distributive vs.\ integrative games?]}
 
