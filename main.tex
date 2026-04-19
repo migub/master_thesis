@@ -934,7 +934,9 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{enumerate}
     \item \textbf{Cooperative reward function with game-normalized ratios} that balances self-interest, social welfare, and fairness while ensuring scale-invariant training signal across heterogeneous game types.
 
-    \item \textbf{$\lambda$ ablation study} across five reward configurations demonstrating that combining all three objectives ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) yields the best overall performance: $+21\%$ on $U_A$, $+14$ percentage points on agreement rate, and $+18\%$ on Nash product over the base model. The Nash product is the strongest individual cooperative signal (fair-only $\gg$ self-only), but dropping the welfare component significantly hurts performance, refuting the initial hypothesis that welfare would be redundant.
+    \item \textbf{$\lambda$ ablation study} across five reward configurations demonstrating that combining all three objectives ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) yields the best overall GRPO performance: $+21\%$ on $U_A$, $+14$ percentage points on agreement rate, and $+18\%$ on Nash product over the base model. The Nash product is the strongest individual cooperative signal (fair-only $\gg$ self-only), but dropping the welfare component significantly hurts performance, refuting the initial hypothesis that welfare would be redundant.
+
+    \item \textbf{LA-GRPO with cooperative reward} demonstrates that turn-level credit assignment and fairness-oriented rewards are complementary: LA-GRPO fair-only achieves the highest per-deal Nash ratio ($0.787$ agreed) of any model, surpassing all GRPO configurations. For single-objective rewards, LA-GRPO substantially outperforms GRPO; for blended rewards, the methods perform comparably.
 
     \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 33\% higher Nash product ($83.1$ vs.\ $62.5$).
 
@@ -948,7 +950,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{Frozen opponent:} All training uses a frozen local opponent that never adapts. This creates a ceiling on measurable cooperative effects---the opponent's strategy is fixed regardless of the agent's behavior.
 
-    \item \textbf{LA-GRPO not yet trained with cooperative reward:} \textcolor{gray}{[IF APPLICABLE: Only standard GRPO was trained despite LA-GRPO being implemented. RQ1 therefore remains partially answered based on Franceschetti's competitive results rather than direct cooperative evidence.]}
+    \item \textbf{Unmatched step counts between GRPO and LA-GRPO:} LA-GRPO was trained for 1340--2000 steps compared to 560--620 for GRPO. While this reflects the practical reality that turn-level credit assignment requires more iterations, it prevents a perfectly controlled comparison at matched compute budgets.
 
     \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
 
@@ -962,7 +964,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{itemize}
     \item \textbf{Self-play training:} Both agents train simultaneously, enabling emergent cooperation rather than cooperation against a static partner.
 
-    \item \textbf{LA-GRPO with cooperative reward:} Turn-level credit assignment combined with fairness-oriented rewards should provide more precise learning signal for cooperative behavior---the expected synergy of this thesis's two main ideas.
+    \item \textbf{Matched-step GRPO vs.\ LA-GRPO comparison:} The current comparison uses different step counts (560--620 vs.\ 1340--2000). A controlled experiment at matched compute budgets would isolate the effect of turn-level credit assignment from additional training time.
 
     \item \textbf{Iterated Trust Game:} Multiple rounds with reputation and reciprocity would test whether cooperative training produces robust tit-for-tat-like strategies.
 
