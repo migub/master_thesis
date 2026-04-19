@@ -630,12 +630,12 @@ A model is considered successful if it achieves higher joint welfare and Nash pr
 
 \subsection{Training Dynamics and Convergence}
 
-Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all five $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with an exponential moving average (EMA, span $= 25$).
+Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all five $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with a centered running average (window $= 100$ data points).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
-    \caption{Negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with an exponential moving average (span $= 25$). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio. Fair-only and all-equal show the strongest cooperative improvements, while self-only improves $U_A$ but not cooperative metrics. Welfare-only performs similarly to self-only on most metrics.}
+    \caption{Negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a centered running average (window $= 100$ data points). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio. Fair-only and all-equal show the strongest cooperative improvements, while self-only improves $U_A$ but not cooperative metrics. Welfare-only performs similarly to self-only on most metrics.}
     \label{fig:training_performance}
 \end{figure}
 
