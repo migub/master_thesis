@@ -341,7 +341,7 @@ The idea is to sample several continuations from the same dialogue context and m
 
 This relative difference---rather than the raw return---becomes the advantage estimate for that turn. An \texttt{assistant\_mask} ensures that only agent tokens (not opponent tokens) contribute to the loss. This mask is constructed during tokenization: tokens from the agent's turns receive mask value 1, opponent turns receive 0.
 
-\textcolor{gray}{[PLACEHOLDER: If LA-GRPO training runs were conducted with cooperative reward, present comparison to standard GRPO here. If only GRPO was used, explain that LA-GRPO was implemented but training was limited to GRPO due to compute constraints.]}
+LA-GRPO training runs with all three cooperative reward configurations (self-only, fair-only, all-equal) were conducted and are evaluated in Section~\ref{sec:results}.
 
 
 \subsection{Policy Update with LoRA Adapters}
@@ -659,7 +659,7 @@ Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the t
 
 \paragraph{Why self-only still achieves decent Nash product.} A purely selfish agent that never compromises receives reward $= 0$ (no agreement). To maximize $U_A$, the agent must reach deals, which requires offering the opponent acceptable terms. ``Good selfishness'' therefore naturally produces reasonable Nash products. The gap between self-only (ratio\_nash $\approx 0.58$) and fair-only (ratio\_nash $\approx 0.66$) is real but moderate, because both approaches converge toward a ceiling imposed by the frozen opponent.
 
-\textcolor{gray}{[PLACEHOLDER: Per-archetype analysis --- how do models perform on compatible vs.\ distributive vs.\ integrative games?]}
+A detailed per-archetype breakdown of evaluation metrics is presented in Sections~5.2 and~5.3.
 
 
 \subsection{GRPO Negotiation Performance}
