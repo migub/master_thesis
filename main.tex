@@ -497,7 +497,7 @@ To provide an intuitive illustration of the negotiation setup, Appendix~\ref{app
 
 \subsection{Training Configurations ($\lambda$ Ablation)}
 
-Four $\lambda$ configurations are trained alongside a base-model baseline to isolate the effect of each reward component:
+Five $\lambda$ configurations are trained alongside a base-model baseline to isolate the effect of each reward component:
 
 \begin{table}[H]
 \centering
@@ -510,13 +510,14 @@ Four $\lambda$ configurations are trained alongside a base-model baseline to iso
 Base Model & --- & --- & --- & none (no LoRA) & 0 \\
 Self-Only & 1.0 & 0.0 & 0.0 & checkpoint-560 & 560 \\
 Fair-Only & 0.0 & 0.0 & 1.0 & checkpoint-560 & 560 \\
+Welfare-Only & 0.0 & 1.0 & 0.0 & checkpoint-598 & 598 \\
 All-Equal & 1.0 & 1.0 & 1.0 & checkpoint-620 & 620 \\
 Self-Fair-Equal & 0.5 & 0.0 & 0.5 & checkpoint-820 & 820 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The first three configurations isolate the effect of each reward component individually. All-equal combines all three terms with equal weight. Self-fair-equal tests whether the welfare component can be dropped without loss of performance, giving equal weight to self-interest and fairness only.
+The first three configurations isolate the effect of each individual reward component. All-equal combines all three terms with equal weight. Self-fair-equal tests whether the welfare component can be dropped without loss of performance, giving equal weight to self-interest and fairness only.
 
 For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. A fixed evaluation dataset containing 10 samples per game type provides deterministic, comparable evaluation across runs. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
 
@@ -629,19 +630,19 @@ A model is considered successful if it achieves higher joint welfare and Nash pr
 
 \subsection{Training Dynamics and Convergence}
 
-Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all four $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with a running average (window $= 60$ steps).
+Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics across all five $\lambda$ configurations, logged via Weights \& Biases. All curves are smoothed with a running average (window $= 60$ steps).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
-    \caption{Negotiation performance during training across four $\lambda$ configurations. All curves are smoothed with a running average (window $= 60$ steps). Shaded regions indicate variance. Left: mean agent payoff $U_A$. Center: agreement rate. Right: normalized Nash ratio. All-equal and fair-only show the strongest improvements, while self-only improves $U_A$ but not cooperative metrics.}
+    \caption{Negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a running average (window $= 60$ steps). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio. Fair-only and all-equal show the strongest cooperative improvements, while self-only improves $U_A$ but not cooperative metrics. Welfare-only performs similarly to self-only on most metrics.}
     \label{fig:training_performance}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{images/training_curves_quality.pdf}
-    \caption{Deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio. Self-only achieves the highest individual payoff on agreed deals, while fair-only leads on balanced outcomes.}
+    \caption{Deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio. Self-only achieves the highest individual payoff on agreed deals, while fair-only leads on balanced outcomes. Welfare-only shows declining Nash ratio after step $\sim$400, suggesting over-optimization toward total value at the expense of balanced deals.}
     \label{fig:training_quality}
 \end{figure}
 
@@ -662,7 +663,7 @@ Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the t
 
 \subsection{Negotiation Performance}
 
-Table~\ref{tab:eval_results} presents the main evaluation results across all five model configurations. Each model was evaluated on 560 games (14 configurations $\times$ 2 starting roles $\times$ 20 repetitions), covering all 7 archetypes with a balanced representation. All games are played in selfplay against the frozen base model opponent, with GPT-4o-mini as outcome judge, temperature $= 1.0$, and seed $= 42$.
+Table~\ref{tab:eval_results} presents the main evaluation results across all model configurations. Each model was evaluated on 560 games (14 configurations $\times$ 2 starting roles $\times$ 20 repetitions), covering all 7 archetypes with a balanced representation. All games are played in selfplay against the frozen base model opponent, with GPT-4o-mini as outcome judge, temperature $= 1.0$, and seed $= 42$.
 
 \begin{table}[H]
 \centering
@@ -676,6 +677,7 @@ Table~\ref{tab:eval_results} presents the main evaluation results across all fiv
 Base Model & --- & 78.6\% & 49.9 \scriptsize{[47.2, 52.6]} & 0.702 \scriptsize{[0.671, 0.734]} & 0.585 \scriptsize{[0.556, 0.613]} \\
 Self-Only & 1/0/0 & 79.8\% & 54.9 \scriptsize{[52.0, 57.7]} & 0.723 \scriptsize{[0.691, 0.753]} & 0.581 \scriptsize{[0.552, 0.610]} \\
 Fair-Only & 0/0/1 & 89.6\% & 55.0 \scriptsize{[52.4, 57.6]} & 0.808 \scriptsize{[0.782, 0.833]} & 0.664 \scriptsize{[0.637, 0.689]} \\
+Welfare-Only & 0/1/0 & \multicolumn{4}{c}{\textcolor{gray}{[PENDING: evaluation not yet conducted]}} \\
 \textbf{All-Equal} & \textbf{1/1/1} & \textbf{92.7\%} & \textbf{60.3} \scriptsize{[58.0, 62.6]} & \textbf{0.840} \scriptsize{[0.819, 0.861]} & \textbf{0.692} \scriptsize{[0.669, 0.716]} \\
 Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scriptsize{[0.727, 0.786]} & 0.625 \scriptsize{[0.596, 0.653]} \\
 \bottomrule
