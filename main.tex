@@ -814,9 +814,34 @@ $\lambda$ \textbf{Config} & \textbf{Method} & \textbf{Steps} & \textbf{Agreement
 
 \subsection{Pareto and Fairness Metrics}
 
-\textcolor{gray}{[PLACEHOLDER: Pareto frontier plots --- $U_A$ vs.\ $U_B$ scatter for different $\lambda$ configurations, ideally per archetype.]}
+Figures~\ref{fig:pareto_grpo} and~\ref{fig:pareto_lagrpo} show $U_A$ vs.\ $U_B$ scatter plots for all agreed negotiations, with the mean outcome marked as a diamond. The dashed diagonal represents equal payoff ($U_A = U_B$). Points above the diagonal indicate deals favoring the opponent; points below favor the agent.
 
-\textcolor{gray}{[PLACEHOLDER: Nash product comparison across game types. Bar chart or table showing how fair-only approaches the Nash bargaining solution while self-only shifts toward the $U_A$ maximum.]}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/pareto_scatter_grpo.pdf}
+    \caption{$U_A$ vs.\ $U_B$ for all GRPO models (agreed negotiations only). Diamond marks the mean outcome. Red crosses at origin indicate failed negotiations. Self-only shifts the distribution below the diagonal (agent-favoring), while fair-only and all-equal produce outcomes closer to the diagonal.}
+    \label{fig:pareto_grpo}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/pareto_scatter_lagrpo.pdf}
+    \caption{$U_A$ vs.\ $U_B$ for all LA-GRPO models (agreed negotiations only). LA-GRPO fair-only clusters most tightly around the diagonal, reflecting balanced deals. Self-only shows a wider spread below the diagonal, indicating aggressive value extraction.}
+    \label{fig:pareto_lagrpo}
+\end{figure}
+
+Figure~\ref{fig:nash_bar} compares the mean Nash product ($U_A \times U_B$) across all models, computed only over agreed negotiations. This metric captures both efficiency (high total value) and fairness (balanced split) in a single number.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/nash_product_comparison.pdf}
+    \caption{Mean Nash product ($U_A \times U_B$) by model, computed over agreed negotiations only. LA-GRPO fair-only achieves the highest value (4775), indicating the most balanced and efficient deals. GRPO all-equal (4010) scores below the base model (4119) on this metric despite its superior aggregate performance---a consequence of closing many marginal deals that individually have lower quality.}
+    \label{fig:nash_bar}
+\end{figure}
+
+\paragraph{Key observations.} The scatter plots reveal distinct negotiation \emph{styles} shaped by the reward function. Self-only models (both GRPO and LA-GRPO) produce outcomes skewed below the diagonal---the agent extracts more value at the opponent's expense. Fair-only models cluster closer to the diagonal, reflecting the Nash product's preference for balanced outcomes. All-equal falls between the two.
+
+The Nash product bar chart highlights that \textbf{LA-GRPO fair-only produces the highest-quality deals} of any model ($U_A \times U_B = 4775$), $16\%$ above the base model ($4119$). An interesting nuance is that GRPO all-equal scores \emph{below} the base model on this agreed-only metric ($4010$ vs.\ $4119$), despite being the strongest GRPO model on aggregate metrics (Table~\ref{tab:eval_results}). This apparent paradox is explained by GRPO all-equal's high agreement rate ($92.7\%$): it closes many marginal deals that individually have lower Nash product, but the sheer volume of deals compensates in aggregate metrics.
 
 
 \subsection{Out-of-Domain Generalization: Trust Game}
