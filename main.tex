@@ -6,6 +6,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{xurl}
 \usepackage{amsmath}
@@ -661,13 +662,13 @@ Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the t
 \textcolor{gray}{[PLACEHOLDER: Per-archetype analysis --- how do models perform on compatible vs.\ distributive vs.\ integrative games?]}
 
 
-\subsection{Negotiation Performance}
+\subsection{GRPO Negotiation Performance}
 
-Table~\ref{tab:eval_results} presents the main evaluation results across all model configurations. Each model was evaluated on 560 games (14 configurations $\times$ 2 starting roles $\times$ 20 repetitions), covering all 7 archetypes with a balanced representation. All games are played in selfplay against the frozen base model opponent, with GPT-4o-mini as outcome judge, temperature $= 1.0$, and seed $= 42$.
+Table~\ref{tab:eval_results} presents the main evaluation results across all GRPO model configurations. Each model was evaluated on 560 games (14 configurations $\times$ 2 starting roles $\times$ 20 repetitions), covering all 7 archetypes with a balanced representation. All games are played in selfplay against the frozen base model opponent, with GPT-4o-mini as outcome judge, temperature $= 1.0$, and seed $= 42$.
 
 \begin{table}[H]
 \centering
-\caption{Negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column. 95\% bootstrap confidence intervals in brackets.}
+\caption{GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column. 95\% bootstrap confidence intervals in brackets.}
 \label{tab:eval_results}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lccccc}
@@ -686,7 +687,7 @@ Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \s
 
 \paragraph{All trained models improve over baseline.} Every trained model significantly outperforms the base model on $U_A$ ($p < 0.05$, Mann-Whitney U test). The improvement ranges from $+10\%$ (self-only) to $+21\%$ (all-equal).
 
-\paragraph{All-equal is the best overall model.} The model trained with $\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$ achieves the highest scores on every metric: $U_A = 60.3$ ($+21\%$ over baseline), agreement rate $= 92.7\%$ ($+14.1$ percentage points), and ratio Nash $= 0.692$ ($+18\%$). The difference over fair-only on $U_A$ is statistically significant ($p = 0.006$).
+\paragraph{All-equal is the best overall GRPO model.} The model trained with $\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$ achieves the highest scores on every metric: $U_A = 60.3$ ($+21\%$ over baseline), agreement rate $= 92.7\%$ ($+14.1$ percentage points), and ratio Nash $= 0.692$ ($+18\%$). The difference over fair-only on $U_A$ is statistically significant ($p = 0.006$).
 
 \paragraph{Self-interest alone is insufficient.} Self-only ($\lambda_{\text{self}} = 1.0$) improves $U_A$ marginally but does \emph{not} improve agreement rate, ratio Nash, or ratio welfare significantly over baseline. The cooperative reward signals (welfare, fairness) are what drive meaningful improvement in negotiation quality.
 
@@ -698,7 +699,7 @@ Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \s
 
 \begin{table}[H]
 \centering
-\caption{Agreement rate (\%) by archetype across models.}
+\caption{GRPO agreement rate (\%) by archetype across models.}
 \label{tab:arch_agreement}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lccccc}
@@ -716,6 +717,100 @@ integrative distributive & 47.5 & 70.0 & 75.0 & \textbf{95.0} & 72.5 \\
 \end{tabular}
 \end{table}
 
+
+\subsection{LA-GRPO Negotiation Performance}
+
+To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves cooperative negotiation learning, three LA-GRPO models are trained with the same $\lambda$ configurations used for GRPO: self-only, fair-only, and all-equal. LA-GRPO trains for more steps (1340--2000) than GRPO (560--620) due to its more sample-efficient learning signal; each step updates the policy based on a single sampled turn $h$ rather than the full dialogue, requiring more iterations to cover the dialogue horizon. The same evaluation protocol (560 games, 20 repetitions, 7 archetypes) is applied.
+
+\begin{table}[H]
+\centering
+\caption{LA-GRPO negotiation evaluation results (20 repetitions, 560 games per model).}
+\label{tab:lagrpo_eval_results}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & $\lambda$ \textbf{(s/w/f)} & \textbf{Steps} & \textbf{Agreement} & $\mathbf{U_A}$ \textbf{mean} & \textbf{Ratio Welfare} & \textbf{Ratio Nash} \\
+\midrule
+Self-Only & 1/0/0 & 2000 & \textbf{95.5\%} & \textbf{68.4} & \textbf{0.896} & 0.684 \\
+Fair-Only & 0/0/1 & 1340 & 88.0\% & 61.7 & 0.832 & \textbf{0.693} \\
+All-Equal & 1/1/1 & 2000 & 92.0\% & 60.1 & 0.857 & 0.680 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Aggregate metrics favor self-only.} LA-GRPO self-only achieves the highest agreement rate (95.5\%), $U_A$ (68.4), and welfare ratio (0.896). However, much of this advantage stems from closing more deals: non-agreements contribute 0 to all metrics, so higher agreement rate mechanically inflates every aggregate score.
+
+\paragraph{Agreed-only metrics reveal a different picture.} Table~\ref{tab:lagrpo_agreed} conditions on successful negotiations only, separating deal quantity from deal quality. Fair-only produces the highest Nash ratio (0.787) and welfare ratio (0.945) per deal, while self-only extracts the most individual payoff (0.716).
+
+\begin{table}[H]
+\centering
+\caption{LA-GRPO agreed-only metrics (quality of successful negotiations).}
+\label{tab:lagrpo_agreed}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Agreed Ratio Self} & \textbf{Agreed Ratio Welfare} & \textbf{Agreed Ratio Nash} \\
+\midrule
+Self-Only & \textbf{0.716} & 0.938 & 0.716 \\
+Fair-Only & 0.701 & \textbf{0.945} & \textbf{0.787} \\
+All-Equal & 0.653 & 0.931 & 0.740 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Fair-only wins Nash product on every archetype.} Table~\ref{tab:lagrpo_arch_nash} shows agreed-only Nash ratios by archetype. Fair-only dominates across all game types, with a particularly striking advantage on integrative games ($0.920$ vs.\ $0.715$ for self-only). This is the strongest evidence for the effectiveness of cooperative reward shaping: when the Nash product is the training objective, the model learns to find balanced, mutually beneficial deals regardless of the game structure.
+
+\begin{table}[H]
+\centering
+\caption{LA-GRPO agreed-only Nash ratio by archetype. Bold indicates best per row.}
+\label{tab:lagrpo_arch_nash}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Archetype} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+\midrule
+Distributive & 0.633 & \textbf{0.680} & 0.676 \\
+Compatible & 0.793 & \textbf{0.802} & 0.735 \\
+Integrative & 0.715 & \textbf{0.920} & 0.872 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Self-only negotiates aggressively.} The payoff balance $U_A / U_B$ confirms that self-only splits outcomes in its own favor: 56.0/44.0 on distributive games and 65.8/46.1 on integrative games. Fair-only produces more symmetric splits (54.4/45.6 and 55.9/60.5), and all-equal even concedes a slight advantage to the opponent on distributive games (47.6/52.4).
+
+
+\subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}
+
+Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations. Note that LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620), as turn-level credit assignment requires more iterations to cover the full dialogue horizon. This means the comparison reflects the methods as practically deployed rather than at matched compute budgets.
+
+\begin{table}[H]
+\centering
+\caption{GRPO vs.\ LA-GRPO comparison on the same $\lambda$ configurations. Agreed ratio Nash measures per-deal cooperative quality.}
+\label{tab:grpo_vs_lagrpo}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{llccccc}
+\toprule
+$\lambda$ \textbf{Config} & \textbf{Method} & \textbf{Steps} & \textbf{Agreement} & $\mathbf{U_A}$ & \textbf{Ratio Nash} & \textbf{Agreed r\_Nash} \\
+\midrule
+\multirow{2}{*}{Self-Only (1/0/0)} & GRPO & 560 & 79.8\% & 54.9 & 0.581 & 0.728 \\
+ & LA-GRPO & 2000 & \textbf{95.5\%} & \textbf{68.4} & \textbf{0.684} & 0.716 \\
+\addlinespace
+\multirow{2}{*}{Fair-Only (0/0/1)} & GRPO & 560 & \textbf{89.6\%} & 55.0 & 0.664 & 0.740 \\
+ & LA-GRPO & 1340 & 88.0\% & \textbf{61.7} & \textbf{0.693} & \textbf{0.787} \\
+\addlinespace
+\multirow{2}{*}{All-Equal (1/1/1)} & GRPO & 620 & \textbf{92.7\%} & \textbf{60.3} & \textbf{0.692} & 0.747 \\
+ & LA-GRPO & 2000 & 92.0\% & 60.1 & 0.680 & 0.740 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{LA-GRPO dramatically improves self-only.} The largest effect occurs for self-only: LA-GRPO achieves $95.5\%$ agreement (vs.\ $79.8\%$ for GRPO), $U_A = 68.4$ (vs.\ $54.9$), and ratio Nash $= 0.684$ (vs.\ $0.581$). Turn-level credit assignment allows the self-interested agent to learn which specific utterances lead to deal closure, rather than attributing the entire dialogue's outcome uniformly across all tokens.
+
+\paragraph{LA-GRPO fair-only achieves the highest per-deal cooperation.} With an agreed Nash ratio of $0.787$, LA-GRPO fair-only produces the most balanced and efficient deals of any model in this study---higher than any GRPO configuration (best: $0.747$). The combination of turn-level credit assignment and Nash product reward creates a precise learning signal: the model learns not just \emph{that} cooperative deals are rewarding, but \emph{which specific turns} produce them.
+
+\paragraph{All-equal shows no clear benefit from LA-GRPO.} GRPO and LA-GRPO perform nearly identically for the blended reward ($92.7\%$ vs.\ $92.0\%$ agreement, $0.692$ vs.\ $0.680$ ratio Nash). A possible explanation is that the multi-objective reward signal is already sufficiently informative at the dialogue level, and turn-level decomposition does not add meaningful additional credit assignment for this reward configuration.
+
+\paragraph{Summary (RQ1).} LA-GRPO improves cooperative negotiation learning, but the magnitude depends on the reward function. For single-objective rewards (self-only, fair-only), turn-level credit assignment provides substantial improvements by isolating which utterances drive the outcome. For the blended reward (all-equal), the benefit is negligible---suggesting that combining multiple reward components already provides sufficient gradient diversity to learn effective negotiation strategies without turn-level decomposition.
 
 \subsection{Pareto and Fairness Metrics}
 
