@@ -608,9 +608,13 @@ Each model---the base Qwen3-14B, GRPO baseline, and cooperative LA-GRPO variant-
 
 \subsubsection{Language and Generalization Tests}
 
-To verify that alignment on negotiation tasks does not harm general capabilities, the final models are re-evaluated on MMLU-Pro~\citep{wang2024mmluprorobustchallengingmultitask}, GLUE~\citep{wang2019gluemultitaskbenchmarkanalysis}, IFEval~\citep{zhou2023instructionfollowingevaluationlargelanguage}, EQ-Bench~\citep{paech2024eqbenchemotionalintelligencebenchmark}, and LM-Pragmatics~\citep{hu-etal-2023-fine}.
+To verify that alignment on negotiation tasks does not harm general capabilities, the best-performing GRPO and LA-GRPO models (both all-equal) are re-evaluated on three standard benchmarks using the Language Model Evaluation Harness \citep{eval-harness} with a vLLM backend:
 
-\textcolor{gray}{[PLACEHOLDER: Benchmark results not yet available. Required for RQ5.]}
+\begin{itemize}
+    \item \textbf{MMLU-Pro} \citep{wang2024mmluprorobustchallengingmultitask}: 5-shot multiple-choice evaluation across 14 academic subjects (12{,}000+ questions with 10 answer options). Tests factual knowledge and reasoning.
+    \item \textbf{IFEval} \citep{zhou2023instructionfollowingevaluationlargelanguage}: 541 prompts with 1{,}500+ atomic constraints testing fine-grained instruction following (formatting, structural constraints, stylistic directives). Reported as prompt-level strict accuracy.
+    \item \textbf{GSM8K}: 8.5K grade-school math word problems requiring multi-step arithmetic reasoning. Reported as strict-match accuracy.
+\end{itemize}
 
 \subsubsection{Success Criteria}
 
@@ -927,9 +931,29 @@ Parse failure & 0\% & 0\% & 0\% & 0\% \\
 
 \subsection{Language Quality and Benchmark Generalization (RQ5)}
 
-\textcolor{gray}{[PLACEHOLDER: MMLU-Pro, GLUE, IFEval, EQ-Bench results have not yet been generated.}
+To assess whether cooperative negotiation training degrades general LLM capabilities, the best-performing GRPO model (all-equal, checkpoint 620) and LA-GRPO model (all-equal, checkpoint 2000) are evaluated on three standard benchmarks alongside the base Qwen3-14B-Instruct model. Evaluations are conducted using the Language Model Evaluation Harness with a vLLM backend on an A100 80\,GB GPU.
 
-\textcolor{gray}{Expected outcome: Minimal capability loss, since LoRA trains only $\sim$0.26\% of parameters and KL regularization constrains policy drift. However, the elevated KL divergence in the fair-only run (0.22--0.62) warrants careful checking. Degeneration may manifest as repetitive phrasing, typographical artifacts, or overly literal negotiation styles---behaviors documented in earlier GRPO experiments \citep{franceschetti2025advantage}.]}
+\begin{table}[H]
+\centering
+\caption{Benchmark results for base model vs.\ trained models. $\Delta$ shows the difference in percentage points vs.\ the base model.}
+\label{tab:benchmarks}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{MMLU-Pro (5-shot)}} & \multicolumn{2}{c}{\textbf{IFEval (strict)}} & \multicolumn{2}{c}{\textbf{GSM8K (strict)}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+\textbf{Model} & Score & $\Delta$ & Score & $\Delta$ & Score & $\Delta$ \\
+\midrule
+Base (Qwen3-14B) & 0.690 & --- & 0.852 & --- & 0.880 & --- \\
+GRPO All-Equal & 0.690 & $-0.02$ & 0.858 & $+0.55$ & 0.882 & $+0.15$ \\
+LA-GRPO All-Equal & 0.688 & $-0.27$ & 0.848 & $-0.37$ & 0.880 & $-0.08$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{No measurable capability degradation.} All absolute deltas remain within $\pm 0.6$ percentage points---well within the noise range for single-seed evaluations on benchmarks of this size. GRPO all-equal even shows a slight improvement on IFEval ($+0.55$ pp) and GSM8K ($+0.15$ pp), while holding MMLU-Pro virtually flat ($-0.02$ pp). LA-GRPO all-equal shows marginally lower scores across all three benchmarks, but the differences are not statistically meaningful.
+
+\paragraph{Interpretation.} The negotiation-specific RL training preserves the model's generalist capability profile. This is consistent with the training setup: LoRA adapts only a small fraction of the model's parameters, and KL regularization constrains the policy from diverging too far from the base model. The result supports the claim that cooperative alignment can be trained without imposing a ``capability tax'' on general language understanding, mathematical reasoning, or instruction following. \citet{franceschetti2025advantage} reported a similar finding for competitive LA-GRPO training on LLaMA-3.1-8B, and the present results confirm that this robustness extends to cooperative reward objectives and a larger model.
 
 
 \subsection{Comparative Discussion}
@@ -942,7 +966,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% \\
 
 \paragraph{RQ4 (Robustness).} \textcolor{gray}{[PLACEHOLDER: Awaiting robustness evaluation results.]}
 
-\paragraph{RQ5 (Capabilities).} \textcolor{gray}{[PLACEHOLDER: Awaiting benchmark results.]}
+\paragraph{RQ5 (Capabilities).} Cooperative negotiation training does not measurably degrade general LLM capabilities. Both GRPO and LA-GRPO all-equal maintain MMLU-Pro, IFEval, and GSM8K scores within $\pm 0.6$ percentage points of the base model. This confirms that LoRA-based fine-tuning with KL regularization preserves the model's generalist profile, consistent with findings from \citet{franceschetti2025advantage} on competitive training.
 
 
 % ============================================================
@@ -981,7 +1005,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{Partial agreement bug:} The \texttt{get\_payoffs()} function returns positive rewards for partial agreements in multi-issue games, slightly distorting the training signal.
 
-    \item \textcolor{gray}{[PLACEHOLDER: Benchmark results missing --- RQ5 not fully answered.]}
+    \item \textbf{Limited benchmark coverage:} Only three benchmarks (MMLU-Pro, IFEval, GSM8K) were evaluated for capability preservation. Additional benchmarks such as EQ-Bench (emotional intelligence), LM-Pragmatics (non-literal language), and GLUE (general language understanding) could reveal more subtle effects of cooperative training, particularly on pragmatic or social reasoning tasks.
 \end{itemize}
 
 \subsection{Future Directions}
