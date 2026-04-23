@@ -605,12 +605,6 @@ To test generalization, the Trust Game is used as an out-of-domain evaluation---
     \item 50 games per condition, temperature $= 1.0$, seed $= 42$.
 \end{itemize}
 
-\subsubsection{Robustness and Comparative Evaluation}
-
-Each model---the base Qwen3-14B, GRPO baseline, and cooperative LA-GRPO variant---is evaluated against fixed, selfish, and random opponents to assess adaptability under mixed-motive conditions, following \citet{duan2024gtbenchuncoveringstrategicreasoning}. For each configuration, 100--200 episodes are sampled under identical random seeds. Mean reward, agreement rate, and tokens per reward point are reported with 95\% bootstrap confidence intervals.
-
-\textcolor{gray}{[PLACEHOLDER: Robustness evaluation results not yet available.]}
-
 \subsubsection{Language and Generalization Tests}
 
 To verify that alignment on negotiation tasks does not harm general capabilities, the best-performing GRPO and LA-GRPO models (both all-equal) are re-evaluated on three standard benchmarks using the Language Model Evaluation Harness \citep{eval-harness} with a vLLM backend:
@@ -621,9 +615,6 @@ To verify that alignment on negotiation tasks does not harm general capabilities
     \item \textbf{GSM8K}: 8.5K grade-school math word problems requiring multi-step arithmetic reasoning. Reported as strict-match accuracy.
 \end{itemize}
 
-\subsubsection{Success Criteria}
-
-A model is considered successful if it achieves higher joint welfare and Nash product than GRPO, maintains comparable benchmark accuracy to the base model, and produces coherent, cooperative dialogues without degeneration.
 
 
 \subsection{Ethical and Practical Considerations}
