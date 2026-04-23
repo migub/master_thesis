@@ -341,7 +341,7 @@ The idea is to sample several continuations from the same dialogue context and m
 
 This relative difference---rather than the raw return---becomes the advantage estimate for that turn. An \texttt{assistant\_mask} ensures that only agent tokens (not opponent tokens) contribute to the loss. This mask is constructed during tokenization: tokens from the agent's turns receive mask value 1, opponent turns receive 0.
 
-LA-GRPO training runs with all three cooperative reward configurations (self-only, fair-only, all-equal) were conducted and are evaluated in Section~\ref{sec:results}.
+LA-GRPO training runs with three cooperative reward configurations (self-only, fair-only, all-equal) were conducted and are evaluated in Section~\ref{sec:results}.
 
 
 \subsection{Policy Update with LoRA Adapters}
