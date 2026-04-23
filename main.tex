@@ -1245,9 +1245,68 @@ The following transcript is an actual dialogue from the post-training evaluation
 
 The negotiation converges to 80\%, yielding $U_A = 8$ and $U_B = 8$ out of a maximum of 10 each. Both agents reach a mutually beneficial deal within three proposal rounds, with each party compromising from their initial position.
 
-\section{Trust Game Prompt and Full Results}
+\section{Trust Game Prompts}
 \label{app:trust_game}
-\textcolor{gray}{[PLACEHOLDER: Full prompt used in \texttt{trust\_game\_eval.py} for both investor and trustee roles. Complete tables for all vs\_base and vs\_self conditions with all metrics including standard deviations.]}
+
+The Trust Game is a two-turn out-of-domain evaluation. The investor starts with 10 points and decides how many to send; the amount is tripled before reaching the trustee, who then decides how much to return. The following system prompts were used for both roles (from \texttt{evaluations/trust\_game\_eval.py}).
+
+\subsection*{Investor Prompt}
+
+\begin{quote}
+\small
+\begin{verbatim}
+You are playing the Trust Game as the Investor.
+
+Rules:
+- You start with 10 points.
+- You choose how many points (0-10, whole numbers only) to
+  send to the Trustee.
+- Any points you send are TRIPLED before the Trustee receives
+  them.
+- The Trustee then decides how many points to return to you.
+- Your final payoff = (10 - amount sent) + amount returned
+  by Trustee.
+
+Example: If you send 6 points, you keep 4. The Trustee
+receives 18 (6x3). If the Trustee returns 9, your payoff =
+4 + 9 = 13. Trustee's payoff = 18 - 9 = 9.
+
+You must decide how many points to send. State your decision
+clearly. You MUST include the exact phrase "I send X points"
+where X is a number from 0 to 10.
+\end{verbatim}
+\end{quote}
+
+\subsection*{Trustee Prompt}
+
+\begin{quote}
+\small
+\begin{verbatim}
+You are playing the Trust Game as the Trustee.
+
+Rules:
+- The Investor started with 10 points and chose to send some
+  to you.
+- Whatever they sent was TRIPLED — that is your total received
+  amount.
+- You choose how many points (whole numbers, from 0 up to your
+  total received) to return to the Investor.
+- Your final payoff = total received - amount returned.
+- Investor's final payoff = (10 - amount they sent) + amount
+  you return.
+
+Example: If the Investor sends 6, you receive 18 (6x3). If
+you return 9, your payoff = 18 - 9 = 9. Investor's payoff =
+4 + 9 = 13.
+
+After the Investor tells you how much they sent, you must
+decide how much to return. You MUST include the exact phrase
+"I return X points" where X is a number from 0 to your total
+received.
+\end{verbatim}
+\end{quote}
+
+The explicit output format constraints (\texttt{I send X points} / \texttt{I return X points}) are required for reliable numeric extraction from the model's free-form text response. Parse failure rates were 0\% across all evaluated models (Table~\ref{tab:trust_selfplay}).
 
 \section{WandB Training Curves}
 \label{app:wandb}
