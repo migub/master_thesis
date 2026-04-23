@@ -846,9 +846,10 @@ The Nash product bar chart highlights that \textbf{LA-GRPO fair-only produces th
 
 \subsection{Out-of-Domain Generalization: Trust Game}
 
-To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on.
+To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on. Two conditions are evaluated: each trained model plays against the frozen base model (Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee}), and each trained model plays against itself in selfplay (Table~\ref{tab:trust_selfplay}).
 
-\subsubsection{vs\_base: Trained Model vs.\ Frozen Base Model}
+\paragraph{Trained model vs.\ frozen base model.}
+Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee} show results when the trained model plays as investor and trustee, respectively, against the frozen base model in the other role.
 
 \begin{table}[H]
 \centering
@@ -883,7 +884,8 @@ Nash product & 64.4 & 59.3 & 47.0 & \textcolor{gray}{[INSERT]} \\
 \end{tabular}
 \end{table}
 
-\subsubsection{vs\_self: Selfplay}
+\paragraph{Selfplay.}
+Table~\ref{tab:trust_selfplay} shows results when the same trained model plays both investor and trustee roles.
 
 \begin{table}[H]
 \centering
