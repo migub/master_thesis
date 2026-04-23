@@ -1027,7 +1027,72 @@ Cooperative LLM negotiators could be deployed in real-world applications ranging
 
 \section{Negotiation Prompt Template}
 \label{app:prompt}
-\textcolor{gray}{[PLACEHOLDER: System prompt from \texttt{env.py} showing how scenarios, roles, and payoff tables are formatted for the model.]}
+
+This appendix reconstructs the exact system prompt used during training and evaluation, assembled at runtime in \texttt{envs/negotiation/games.py} from three sources: (i)~the scenario description (shared between both agents), (ii)~the agent-specific role description and payoff tables, and (iii)~the general game rules.
+
+The concrete example below shows the startup-side system prompt for an Employment Contract negotiation over two issues (salary and remote work). The candidate-side prompt has identical structure with mirrored payoffs.
+
+\begin{quote}
+\small
+\begin{verbatim}
+A growing startup and a senior software engineer are negotiating
+the terms of an employment contract. Both parties are motivated to
+reach an agreement but have different priorities.
+
+You are an advisor representing the best interests of the startup.
+Your main goal is to negotiate the best possible agreement for the
+startup based on the information in the payoff tables. The numbers
+in the payoff tables show how valuable each outcome is to you. You
+can trust that the payoffs assigned to the different options in
+your table are accurate.
+
+Your payoffs and possible values are listed in the payoff tables
+below. Adopt these payoffs as your preferences while negotiating.
+
+Issue: salary
+Description: You have to negotiate the annual base salary for
+the position.
+Your payoffs:
+  $80K:  10    $95K:   7    $110K:  4    $125K:  1
+  $85K:   9    $100K:  6    $115K:  3    $130K:  0
+  $90K:   8    $105K:  5    $120K:  2
+
+Issue: remote work
+Description: You have to negotiate the number of remote work days
+per week. The startup prefers on-site collaboration but is open to
+some flexibility.
+Your payoffs:
+  0 days: 10   2 days: 6    4 days: 2
+  1 day:   8   3 days: 4    5 days: 0
+
+Never forget the following negotiation rules:
+- Your total payoff is the sum of your payoffs on all issues.
+  Higher payoffs are better than lower payoffs.
+- A valid agreement occurs only when all issues are decided.
+  Partial agreements result in a total payoff to you of zero.
+- You are not allowed to accept any agreement that results in a
+  payoff less than zero.
+- You are not allowed to deviate from or innovate with the payoffs
+  listed on the payoff table.
+- No side payments are allowed.
+- You may describe issues and elaborate on them as you see fit.
+  However, you are not allowed to invent additional issues.
+- Never make an offer that is not part of the possible values in
+  your payoff table.
+
+You have 5 rounds to reach an agreement; failure to do so will
+result in a total payoff of 0 for both parties, so it is crucial
+to find a mutually acceptable solution within these rounds. Also
+keep your answer as short and concise as possible. Directly state
+your offer and response to your negotiation partner, without
+showing your thought process. Make sure that you only talk about
+the issues in the payoff table, else your payoff will be 0. Do
+not mention your internal payoff to the other party, they are
+only for your reference, otherwise your payoff will be 0.
+\end{verbatim}
+\end{quote}
+
+The importance weighting vector $(\omega_{A,1}, \omega_{A,2})$ is not directly shown in the prompt; it is applied when computing the final payoff, where each issue's raw payoff is scaled by the corresponding weight. Weights are drawn independently for each agent from $\{0.9, 0.5, 0.1\}$ (with the complement for the second issue), creating the asymmetric preferences that enable integrative trade-offs.
 
 \section{Game Configuration Examples}
 \label{app:game_configs}
