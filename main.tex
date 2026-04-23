@@ -991,7 +991,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \subsection{Limitations}
 
 \begin{itemize}
-    \item \textbf{Single GPU, no vLLM:} Sequential dialogue generation ($\sim$80 forward passes per training step) limits the scale of training. A vLLM colocate implementation plan exists but was not realized.
+    \item \textbf{Training budget constraints:} Due to cost limitations on rented GPU compute, GRPO runs could not be extended far enough to confirm convergence---the training curves suggest continued improvement at the cutoff point (Figures~\ref{fig:training_performance} and~\ref{fig:training_quality}). The same budget constraints prevented a more fine-grained exploration of the $\lambda$ space (e.g., $\lambda_{\text{self}} = 0.7$, $\lambda_{\text{fair}} = 0.3$) that could reveal whether intermediate weightings outperform both extremes and the uniform all-equal configuration.
 
     \item \textbf{Frozen opponent:} All training uses a frozen local opponent that never adapts. This creates a ceiling on measurable cooperative effects---the opponent's strategy is fixed regardless of the agent's behavior.
 
