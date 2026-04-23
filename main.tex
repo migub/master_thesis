@@ -498,22 +498,22 @@ To provide an intuitive illustration of the negotiation setup, Appendix~\ref{app
 
 \subsection{Training Configurations ($\lambda$ Ablation)}
 
-Five $\lambda$ configurations are trained alongside a base-model baseline to isolate the effect of each reward component:
+Five $\lambda$ configurations are trained with GRPO to explore the effect of each reward component. Based on these results, the three most informative configurations are retrained with LA-GRPO. Welfare-only and self-fair-equal are omitted from LA-GRPO training, as the GRPO ablation showed that welfare alone provides a weak signal and that removing the welfare component hurts performance. This also reduces compute costs, since LA-GRPO requires more training steps per run (though fewer tokens per step due to the shared prefix mechanism).
 
 \begin{table}[H]
 \centering
-\caption{$\lambda$ configurations for the ablation study.}
+\caption{$\lambda$ configurations and training methods. LA-GRPO trains for more steps but consumes fewer tokens per step than GRPO, as the shared dialogue prefix is generated only once per training step.}
 \label{tab:lambda_configs}
-\begin{tabular}{lccccc}
+\begin{tabular}{lccclcc}
 \toprule
-\textbf{Run} & $\lambda_{\text{self}}$ & $\lambda_{\text{welfare}}$ & $\lambda_{\text{fair}}$ & \textbf{Checkpoint} & \textbf{Steps} \\
+\textbf{Run} & $\lambda_{\text{s}}$ & $\lambda_{\text{w}}$ & $\lambda_{\text{f}}$ & \textbf{Method} & \textbf{Steps} \\
 \midrule
-Base Model & --- & --- & --- & none (no LoRA) & 0 \\
-Self-Only & 1.0 & 0.0 & 0.0 & checkpoint-560 & 560 \\
-Fair-Only & 0.0 & 0.0 & 1.0 & checkpoint-560 & 560 \\
-Welfare-Only & 0.0 & 1.0 & 0.0 & checkpoint-598 & 598 \\
-All-Equal & 1.0 & 1.0 & 1.0 & checkpoint-620 & 620 \\
-Self-Fair-Equal & 0.5 & 0.0 & 0.5 & checkpoint-820 & 820 \\
+Base Model & --- & --- & --- & --- & 0 \\
+Self-Only & 1.0 & 0.0 & 0.0 & GRPO + LA-GRPO & 560 / 2000 \\
+Fair-Only & 0.0 & 0.0 & 1.0 & GRPO + LA-GRPO & 560 / 1340 \\
+Welfare-Only & 0.0 & 1.0 & 0.0 & GRPO only & 598 \\
+All-Equal & 1.0 & 1.0 & 1.0 & GRPO + LA-GRPO & 620 / 2000 \\
+Self-Fair-Equal & 0.5 & 0.0 & 0.5 & GRPO only & 820 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -724,7 +724,7 @@ integrative distributive & 47.5 & 70.0 & 75.0 & \textbf{95.0} & 72.5 \\
 
 \subsection{LA-GRPO Negotiation Performance}
 
-To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves cooperative negotiation learning, three LA-GRPO models are trained with the same $\lambda$ configurations used for GRPO: self-only, fair-only, and all-equal. LA-GRPO trains for more steps (1340--2000) than GRPO (560--620) due to its more sample-efficient learning signal; each step updates the policy based on a single sampled turn $h$ rather than the full dialogue, requiring more iterations to cover the dialogue horizon. The same evaluation protocol (560 games, 20 repetitions, 7 archetypes) is applied.
+To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves cooperative negotiation learning, three LA-GRPO models are trained with the same $\lambda$ configurations used for GRPO: self-only, fair-only, and all-equal. LA-GRPO trains for more steps (1340--2000) than GRPO (560--620), but each step consumes significantly fewer tokens: the shared dialogue prefix up to turn $h$ is generated only once, and only the $G$ continuations from turn $h$ onward require new forward passes. The same evaluation protocol (560 games, 20 repetitions, 7 archetypes) is applied.
 
 \begin{table}[H]
 \centering
@@ -785,7 +785,7 @@ Integrative & 0.715 & \textbf{0.920} & 0.872 \\
 
 \subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}
 
-Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations. Note that LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620), as turn-level credit assignment requires more iterations to cover the full dialogue horizon. This means the comparison reflects the methods as practically deployed rather than at matched compute budgets.
+Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations. LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620), but each step is more token-efficient due to the shared prefix mechanism. This means the comparison reflects the methods at roughly comparable token budgets rather than matched step counts.
 
 \begin{table}[H]
 \centering
@@ -999,7 +999,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{Frozen opponent:} All training uses a frozen local opponent that never adapts. This creates a ceiling on measurable cooperative effects---the opponent's strategy is fixed regardless of the agent's behavior.
 
-    \item \textbf{Unmatched step counts between GRPO and LA-GRPO:} LA-GRPO was trained for 1340--2000 steps compared to 560--620 for GRPO. While this reflects the practical reality that turn-level credit assignment requires more iterations, it prevents a perfectly controlled comparison at matched compute budgets.
+    \item \textbf{Unmatched step counts between GRPO and LA-GRPO:} LA-GRPO was trained for 1340--2000 steps compared to 560--620 for GRPO. While LA-GRPO is more token-efficient per step (shared prefix), the total token budgets were not precisely matched, preventing a perfectly controlled comparison.
 
     \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
 
@@ -1013,7 +1013,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{itemize}
     \item \textbf{Self-play training:} Both agents train simultaneously, enabling emergent cooperation rather than cooperation against a static partner.
 
-    \item \textbf{Matched-step GRPO vs.\ LA-GRPO comparison:} The current comparison uses different step counts (560--620 vs.\ 1340--2000). A controlled experiment at matched compute budgets would isolate the effect of turn-level credit assignment from additional training time.
+    \item \textbf{Matched-budget GRPO vs.\ LA-GRPO comparison:} The current comparison uses different step counts, and while LA-GRPO is more token-efficient per step, the total token budgets were not precisely matched. A controlled experiment at identical token budgets would cleanly isolate the effect of turn-level credit assignment.
 
     \item \textbf{Iterated Trust Game:} Multiple rounds with reputation and reciprocity would test whether cooperative training produces robust tit-for-tat-like strategies.
 
