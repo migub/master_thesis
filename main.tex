@@ -1000,12 +1000,16 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
     \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
 
     \item \textbf{Limited benchmark coverage:} Only three benchmarks (MMLU-Pro, IFEval, GSM8K) were evaluated for capability preservation. Additional benchmarks such as EQ-Bench (emotional intelligence), LM-Pragmatics (non-literal language), and GLUE (general language understanding) could reveal more subtle effects of cooperative training, particularly on pragmatic or social reasoning tasks.
+
+    \item \textbf{Dialogue quality:} Qualitatively, the generated negotiations are often short and formulaic, with agents frequently repeating the same question (``What do you think?'') at the end of each turn (see the example in Appendix~\ref{app:example_dialogue}). While the quantitative negotiation outcomes are meaningful, the dialogues lack the richness of human negotiation---few genuine justifications, rare information exchange about underlying interests, and little strategic variation across games. This likely reflects the modest reasoning capacity of the 14B base model combined with LoRA's limited parameter updates.
 \end{itemize}
 
 \subsection{Future Directions}
 
 \begin{itemize}
     \item \textbf{Self-play training:} Both agents train simultaneously, enabling emergent cooperation rather than cooperation against a static partner.
+
+    \item \textbf{Larger base model:} Training on a stronger foundation model (e.g., Qwen3-32B or a frontier-scale model) may produce richer, less repetitive dialogues with more substantive reasoning and information exchange. The current 14B model's limited capacity appears to constrain dialogue quality more than the training objective does.
 
     \item \textbf{vLLM colocate mode:} Resolving the BitsAndBytes dependency conflict discussed in Section~\ref{sec:technical} would enable batched generation and significantly faster training, in turn allowing larger-scale experiments and a broader $\lambda$ exploration.
 
@@ -1307,10 +1311,6 @@ received.
 \end{quote}
 
 The explicit output format constraints (\texttt{I send X points} / \texttt{I return X points}) are required for reliable numeric extraction from the model's free-form text response. Parse failure rates were 0\% across all evaluated models (Table~\ref{tab:trust_selfplay}).
-
-\section{WandB Training Curves}
-\label{app:wandb}
-\textcolor{gray}{[PLACEHOLDER: Exported learning curves showing ratio\_rcoop, agreement rate, KL divergence, and per-archetype metrics over training steps for all three runs.]}
 
 \section{Declaration of Authorship}
 \label{app:declaration}
