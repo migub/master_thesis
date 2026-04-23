@@ -566,50 +566,33 @@ To fit Qwen3-14B on a single GPU, BitsAndBytes 4-bit quantization is applied (nf
 
 \subsection{Evaluation Pipeline}
 
-All results reported in Chapter~\ref{sec:results} are based on post-training evaluation. No evaluation was conducted during training; training progress was monitored via the WandB-logged reward metrics only.
+\subsubsection{Training Monitoring}
 
-\subsubsection{Evaluation Protocol}
+Training progress is tracked via Weights \& Biases (WandB). At each training step, the following metrics are logged from the negotiation that was just played:
 
-Each model is evaluated by playing selfplay negotiations against the frozen base model opponent (LoRA disabled). The evaluation dataset consists of \textbf{14 game configurations} drawn from the training set, covering all 7 archetypes. Each configuration is played in both starting roles (agent starts first vs.\ opponent starts first), yielding 28 games per repetition. With \textbf{20 repetitions} per model, this produces a total of \textbf{560 evaluated negotiations} per model. Each repetition uses a different random seed (base seed $= 42$, incremented per repetition) to ensure variation in generation while maintaining reproducibility.
+\begin{itemize}
+    \item \textbf{Reward metrics:} The composite cooperative reward $R_{\text{coop}}$ and its game-normalized ratio \texttt{ratio\_rcoop}, as well as the individual components \texttt{ratio\_self}, \texttt{ratio\_welfare}, and \texttt{ratio\_nash} (each in $[0, 1]$).
+    \item \textbf{Agreement rate:} The fraction of negotiations that result in a deal.
+    \item \textbf{Agreed-only metrics:} The same reward ratios computed exclusively over successful negotiations, separating deal quality from deal quantity.
+    \item \textbf{Training diagnostics:} KL divergence between the current policy and the reference model, reward standard deviation across the $G$ continuations, training tokens consumed, and step time.
+\end{itemize}
 
-Generation uses temperature $= 1.0$ with a maximum of 200 tokens per turn and 5 negotiation rounds per agent. The same generation parameters are applied to all models, including the base model, to ensure a fair comparison.
+These metrics serve as an early signal for training dynamics (e.g., detecting reward collapse or KL divergence spikes) but are noisy due to the small sample size per step. All quantitative results reported in Chapter~\ref{sec:results} are therefore based on the post-training evaluation described below.
 
-\subsubsection{Outcome Extraction and Agreement Definition}
+\subsubsection{Post-Training Evaluation}
 
-After each dialogue, the transcript is sent to GPT-4o-mini, which extracts the final agreement as a structured JSON specifying the agreed value for each negotiated issue. \citet{franceschetti2025advantage} verified that this extraction achieves 98\% accuracy across 500 manually inspected samples.
+Each trained model is evaluated by playing selfplay negotiations against the frozen base model opponent (LoRA disabled). The evaluation dataset consists of \textbf{14 game configurations} drawn from the training set, covering all 7 archetypes. Each configuration is played in both starting roles (agent starts first vs.\ opponent starts first), yielding 28 games per repetition. With \textbf{20 repetitions} per model, this produces a total of \textbf{560 evaluated negotiations} per model. Each repetition uses a different random seed (base seed $= 42$, incremented per repetition) to ensure variation in generation while maintaining reproducibility.
 
-A negotiation is classified as \textit{agreed} if either agent receives a positive payoff ($U_A > 0$ or $U_B > 0$). This includes partial agreements where agents agree on some but not all issues---a known limitation, as partial agreements can produce positive rewards for incomplete deals, slightly inflating agreement rates and reward metrics.
+Generation uses temperature $= 1.0$ with a maximum of 200 tokens per turn and 5 negotiation rounds per agent. The same generation parameters are applied to all models to ensure a fair comparison.
 
-\subsubsection{Negotiation Outcome Metrics}
+A negotiation is classified as \textit{agreed} if either agent receives a positive payoff ($U_A > 0$ or $U_B > 0$). This includes partial agreements where agents agree on some but not all issues---a known limitation, as partial agreements can produce positive rewards for incomplete deals, slightly inflating agreement rates.
 
-For each dialogue, agent-specific utilities $U_A$ and $U_B$ are computed from the payoff tables. From these values, aggregate metrics are derived.
-
-The \textbf{joint welfare} captures total efficiency:
-\begin{equation}
-W = U_A + U_B.
-\end{equation}
-
-The \textbf{Nash product} measures fairness and balance:
-\begin{equation}
-N = U_A \times U_B.
-\end{equation}
-
-All metrics are additionally reported as \textbf{game-normalized ratios} (each in $[0, 1]$), enabling comparison across game types with different payoff scales:
-$\text{ratio\_self} = U_A / \max U_A$,
-$\text{ratio\_welfare} = W / \max W$,
-$\text{ratio\_nash} = N / \max N$, and
-$\text{ratio\_rcoop} = R_{\text{coop}} / \max R_{\text{coop}}$.
-
-\textbf{Agreed-only variants} of all metrics are computed exclusively over successful negotiations, separating deal quality from agreement rate. A \textbf{per-archetype breakdown} further splits metrics by game type to reveal whether models perform differently on compatible, distributive, and integrative games.
-
-\subsubsection{Statistical Testing}
-
-Since negotiation payoffs are not normally distributed (failed negotiations produce zeros, creating a bimodal distribution), non-parametric tests are used throughout.
+Since negotiation payoffs are not normally distributed (failed negotiations produce zeros, creating a bimodal distribution), non-parametric statistical tests are used throughout:
 
 \begin{itemize}
     \item \textbf{Mann-Whitney U test:} For pairwise comparison of continuous metrics ($U_A$, ratio Nash, ratio welfare) between two models. Two-sided, with significance levels $^* p < 0.05$, $^{**} p < 0.01$, $^{***} p < 0.001$.
     \item \textbf{Chi-squared test:} For comparing binary agreement rates between models, using $2 \times 2$ contingency tables.
-    \item \textbf{Bootstrap confidence intervals:} 95\% CIs are computed via non-parametric bootstrap with 10{,}000 resamples. For each resample, $N$ observations are drawn with replacement and the mean is computed; the 2.5th and 97.5th percentiles form the interval.
+    \item \textbf{Bootstrap confidence intervals:} 95\% CIs computed via non-parametric bootstrap with 10{,}000 resamples.
 \end{itemize}
 
 \subsubsection{Out-of-Domain: Trust Game}
