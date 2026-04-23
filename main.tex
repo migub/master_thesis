@@ -553,7 +553,7 @@ Seed & 42 \\
 \end{table}
 
 
-\subsection{Technical Setup}
+\subsection{Technical Setup}\label{sec:technical}
 
 \paragraph{Infrastructure and GPU Migration.}
 \citet{franceschetti2025advantage}'s original training pipeline required four GPUs: two NVIDIA A100s running vLLM inference servers (one for the policy model $\pi_\theta$ and one for the frozen opponent $\pi_c$) and two additional A100s for gradient computation. This setup enabled batched dialogue generation via vLLM's paged attention mechanism \citep{kwon2023efficientmemorymanagementlarge}, significantly accelerating the sampling of multiple continuations per training step.
@@ -999,8 +999,6 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
 
-    \item \textbf{Partial agreement bug:} The \texttt{get\_payoffs()} function returns positive rewards for partial agreements in multi-issue games, slightly distorting the training signal.
-
     \item \textbf{Limited benchmark coverage:} Only three benchmarks (MMLU-Pro, IFEval, GSM8K) were evaluated for capability preservation. Additional benchmarks such as EQ-Bench (emotional intelligence), LM-Pragmatics (non-literal language), and GLUE (general language understanding) could reveal more subtle effects of cooperative training, particularly on pragmatic or social reasoning tasks.
 \end{itemize}
 
@@ -1009,11 +1007,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{itemize}
     \item \textbf{Self-play training:} Both agents train simultaneously, enabling emergent cooperation rather than cooperation against a static partner.
 
-    \item \textbf{Matched-budget GRPO vs.\ LA-GRPO comparison:} The current comparison uses different step counts, and while LA-GRPO is more token-efficient per step, the total token budgets were not precisely matched. A controlled experiment at identical token budgets would cleanly isolate the effect of turn-level credit assignment.
-
-    \item \textbf{Iterated Trust Game:} Multiple rounds with reputation and reciprocity would test whether cooperative training produces robust tit-for-tat-like strategies.
-
-    \item \textbf{vLLM colocate mode:} Batched generation for $>$10$\times$ training speedup, enabling larger-scale experiments and more $\lambda$ configurations.
+    \item \textbf{vLLM colocate mode:} Resolving the BitsAndBytes dependency conflict discussed in Section~\ref{sec:technical} would enable batched generation and significantly faster training, in turn allowing larger-scale experiments and a broader $\lambda$ exploration.
 
     \item \textbf{Dynamic $\lambda$ schedules:} Start with high $\lambda_{\text{self}}$ (stability), then gradually increase $\lambda_{\text{fair}}$ as training progresses---analogous to curriculum learning.
 
