@@ -520,7 +520,7 @@ Self-Fair-Equal & 0.5 & 0.0 & 0.5 & GRPO only & 820 \\
 
 The first three configurations isolate the effect of each individual reward component. All-equal combines all three terms with equal weight. Self-fair-equal tests whether the welfare component can be dropped without loss of performance, giving equal weight to self-interest and fairness only.
 
-For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. A fixed evaluation dataset containing 10 samples per game type provides deterministic, comparable evaluation across runs. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
+For each training step, $G = 8$ independent dialogue continuations are generated per prompt. Training progress is logged via Weights \& Biases, with the game-normalized \texttt{ratio\_rcoop} serving as the primary training metric. All model weights, configuration files, and generated dialogues are version-controlled using GitHub to ensure reproducibility.
 
 Table~\ref{tab:hyperparams} lists the full training hyperparameters, which are shared across all $\lambda$ configurations. The optimizer is AdamW (fused variant) with a learning rate of $5 \times 10^{-5}$ and a constant-with-warmup schedule (10 warmup steps). The KL penalty coefficient $\beta = 0.08$ constrains the policy from diverging too far from the frozen reference model, while the clipping threshold $\epsilon = 0.2$ bounds the importance ratio $\pi_\theta / \pi_{\text{old}}$ to $[1 - \epsilon, 1 + \epsilon]$ in the GRPO loss. In practice, clipping never triggered during training (clip ratio remained at 0 across all runs), indicating that the LoRA-based updates are sufficiently conservative. Generation temperature is set to $1.0$ to encourage diverse dialogue continuations across the $G = 8$ samples. Gradient checkpointing is enabled to reduce memory usage at the cost of slightly longer step times.
 
@@ -566,29 +566,51 @@ To fit Qwen3-14B on a single GPU, BitsAndBytes 4-bit quantization is applied (nf
 
 \subsection{Evaluation Pipeline}
 
+All results reported in Chapter~\ref{sec:results} are based on post-training evaluation. No evaluation was conducted during training; training progress was monitored via the WandB-logged reward metrics only.
+
+\subsubsection{Evaluation Protocol}
+
+Each model is evaluated by playing selfplay negotiations against the frozen base model opponent (LoRA disabled). The evaluation dataset consists of \textbf{14 game configurations} drawn from the training set, covering all 7 archetypes. Each configuration is played in both starting roles (agent starts first vs.\ opponent starts first), yielding 28 games per repetition. With \textbf{20 repetitions} per model, this produces a total of \textbf{560 evaluated negotiations} per model. Each repetition uses a different random seed (base seed $= 42$, incremented per repetition) to ensure variation in generation while maintaining reproducibility.
+
+Generation uses temperature $= 1.0$ with a maximum of 200 tokens per turn and 5 negotiation rounds per agent. The same generation parameters are applied to all models, including the base model, to ensure a fair comparison.
+
+\subsubsection{Outcome Extraction and Agreement Definition}
+
+After each dialogue, the transcript is sent to GPT-4o-mini, which extracts the final agreement as a structured JSON specifying the agreed value for each negotiated issue. \citet{franceschetti2025advantage} verified that this extraction achieves 98\% accuracy across 500 manually inspected samples.
+
+A negotiation is classified as \textit{agreed} if either agent receives a positive payoff ($U_A > 0$ or $U_B > 0$). This includes partial agreements where agents agree on some but not all issues---a known limitation, as partial agreements can produce positive rewards for incomplete deals, slightly inflating agreement rates and reward metrics.
+
 \subsubsection{Negotiation Outcome Metrics}
 
-For each dialogue, the final agreements on all negotiated issues are parsed by the outcome extractor, and agent-specific rewards are computed as in Eq.~\ref{eq:rcoop_normalized}. From these values, additional aggregate metrics are derived.
+For each dialogue, agent-specific utilities $U_A$ and $U_B$ are computed from the payoff tables. From these values, aggregate metrics are derived.
 
-The \textbf{joint welfare} captures total efficiency, i.e.\ how much total value the negotiation produced for both agents:
+The \textbf{joint welfare} captures total efficiency:
 \begin{equation}
-W = R_A + R_B.
+W = U_A + U_B.
 \end{equation}
 
-The \textbf{Nash product} measures fairness and balance between the agents, rewarding outcomes where both achieve high payoffs simultaneously:
+The \textbf{Nash product} measures fairness and balance:
 \begin{equation}
-N = R_A \times R_B.
+N = U_A \times U_B.
 \end{equation}
 
-In addition, the following \textbf{normalized ratios} are computed, each in $[0, 1]$ and comparable across game types:
+All metrics are additionally reported as \textbf{game-normalized ratios} (each in $[0, 1]$), enabling comparison across game types with different payoff scales:
+$\text{ratio\_self} = U_A / \max U_A$,
+$\text{ratio\_welfare} = W / \max W$,
+$\text{ratio\_nash} = N / \max N$, and
+$\text{ratio\_rcoop} = R_{\text{coop}} / \max R_{\text{coop}}$.
+
+\textbf{Agreed-only variants} of all metrics are computed exclusively over successful negotiations, separating deal quality from agreement rate. A \textbf{per-archetype breakdown} further splits metrics by game type to reveal whether models perform differently on compatible, distributive, and integrative games.
+
+\subsubsection{Statistical Testing}
+
+Since negotiation payoffs are not normally distributed (failed negotiations produce zeros, creating a bimodal distribution), non-parametric tests are used throughout.
+
 \begin{itemize}
-    \item $\text{ratio\_self} = U_A / \max U_A$
-    \item $\text{ratio\_welfare} = W / \max W$
-    \item $\text{ratio\_nash} = N / \max N$
-    \item $\text{ratio\_rcoop} = R_{\text{coop}} / \max R_{\text{coop}}$ (primary training metric)
+    \item \textbf{Mann-Whitney U test:} For pairwise comparison of continuous metrics ($U_A$, ratio Nash, ratio welfare) between two models. Two-sided, with significance levels $^* p < 0.05$, $^{**} p < 0.01$, $^{***} p < 0.001$.
+    \item \textbf{Chi-squared test:} For comparing binary agreement rates between models, using $2 \times 2$ contingency tables.
+    \item \textbf{Bootstrap confidence intervals:} 95\% CIs are computed via non-parametric bootstrap with 10{,}000 resamples. For each resample, $N$ observations are drawn with replacement and the mean is computed; the 2.5th and 97.5th percentiles form the interval.
 \end{itemize}
-
-\textbf{Agreed-only variants} of all metrics are computed only over successful negotiations, separating deal quality from agreement rate. A \textbf{per-archetype breakdown} further splits metrics by compatible, mixture, and integrative-distributive games.
 
 \subsubsection{Out-of-Domain: Trust Game}
 
