@@ -144,9 +144,24 @@ This chapter provides the conceptual foundation for the thesis. It connects nego
 
 Franceschetti formulated multi-turn negotiation as a Markov Decision Process (MDP), where states $s_t$ correspond to the dialogue history up to turn $t$, actions $a_t$ represent the next utterance, and a terminal reward $R(s_N)$ is assigned at the end of the negotiation based on the agreed outcome. Two agents alternate offers over $N=5$ rounds each, following an alternating-offer protocol.
 
-In zero-sum settings, $U_A + U_B$ is approximately constant---one agent's gain is the other's loss. The key departure in this thesis is the extension to \textbf{non-zero-sum} (mixed-motive) games, where $U_A + U_B$ varies across outcomes. In integrative games, trade-offs between issues of differing importance create opportunities for mutual gain that do not exist in purely distributive settings.
+Formally, the negotiation is defined as a tuple $\mathcal{M} = (\mathcal{S}, \mathcal{A}, P, R, \gamma)$:
 
-\textcolor{gray}{[TODO: Add formal MDP definition following Franceschetti's notation. Include state transition diagram.]}
+\begin{itemize}
+    \item $\mathcal{S}$: the state space. Each state $s_t$ is the concatenation of the system prompt (scenario description, role description, payoff tables) and the dialogue history $\{u_0, u_1, \ldots, u_{t-1}\}$ up to turn $t$.
+    \item $\mathcal{A}$: the action space. An action $a_t = u_t$ is a natural-language utterance generated token-by-token by the policy $\pi_\theta(a_t \mid s_t)$. The utterance itself is a sequence of tokens, making the overall problem a hierarchical generation task.
+    \item $P$: the state transition. Transitions are deterministic at the dialogue level: $s_{t+1} = s_t \oplus u_t$, where $\oplus$ denotes appending the utterance to the history. Stochasticity enters only through the opponent's policy $\pi_c$, which is frozen during training.
+    \item $R$: the reward function. Intermediate turns yield zero reward; only the terminal state $s_N$ (reached after both agents have had $N$ rounds or a deal has been confirmed) produces a reward $R(s_N)$. The reward is computed from the agreed-upon issue values $(v_1, \ldots, v_K)$ extracted from the dialogue: $R(s_N) = R_{\text{coop}}(U_A, U_B)$ as defined in Section~\ref{sec:cooperative_reward}.
+    \item $\gamma \in [0, 1]$: the discount factor, set to $\gamma = 1$ throughout because the only nonzero reward is terminal and the horizon is short and fixed.
+\end{itemize}
+
+The objective is to find a policy $\pi_\theta$ that maximizes the expected terminal reward:
+\begin{equation}
+\max_\theta \; \mathbb{E}_{s_N \sim \pi_\theta, \pi_c} \left[ R_{\text{coop}}(U_A, U_B) \right].
+\end{equation}
+
+This formulation treats the entire dialogue as a single episode and is standard for RLHF-style language model training. The token-level policy $\pi_\theta(y_t \mid y_{<t}, s_t)$ that generates each utterance is implicitly embedded in the utterance-level action $a_t = u_t$; GRPO and LA-GRPO compute the loss at the token level, but credit assignment operates at either the full-episode level (GRPO) or the single-turn level (LA-GRPO, see Section~\ref{sec:la_grpo}).
+
+In zero-sum settings, $U_A + U_B$ is approximately constant---one agent's gain is the other's loss. The key departure in this thesis is the extension to \textbf{non-zero-sum} (mixed-motive) games, where $U_A + U_B$ varies across outcomes. In integrative games, trade-offs between issues of differing importance create opportunities for mutual gain that do not exist in purely distributive settings.
 
 \subsection{Cooperative and Integrative Negotiation Theory}
 
@@ -251,7 +266,7 @@ Each training iteration follows the following steps:
 After updating the model's LoRA adapters, a new scenario is initialized. Because new dialogues are generated after every update, the model is constantly learning from its own evolving behavior rather than from a static dataset.
 
 
-\subsection{Cooperative Reward Design}
+\subsection{Cooperative Reward Design}\label{sec:cooperative_reward}
 
 \subsubsection{From Competitive to Cooperative Reward}
 
@@ -324,7 +339,7 @@ Each component is now in $[0, 1]$ regardless of game type. The function \texttt{
 While initial training metrics suggested that the all-equal configuration might underperform due to the welfare term's zero variance in distributive games, the full evaluation (Section~\ref{sec:results}) revealed a more nuanced picture: all-equal ultimately achieved the best overall performance, suggesting that the welfare signal contributes meaningfully in integrative settings despite being uninformative in distributive ones.
 
 
-\subsection{Calculating Local Advantage}
+\subsection{Calculating Local Advantage}\label{sec:la_grpo}
 
 Having defined the cooperative reward $R_{\text{coop}}$, the local advantage signal used by LA-GRPO to assign credit and update the policy can now be computed.
 \par
@@ -615,11 +630,6 @@ To verify that alignment on negotiation tasks does not harm general capabilities
     \item \textbf{GSM8K}: 8.5K grade-school math word problems requiring multi-step arithmetic reasoning. Reported as strict-match accuracy.
 \end{itemize}
 
-
-
-\subsection{Ethical and Practical Considerations}
-
-\textcolor{gray}{[PLACEHOLDER: Brief discussion of transparency, safety implications, and social alignment relevance of cooperative AI negotiators.]}
 
 
 % ============================================================
