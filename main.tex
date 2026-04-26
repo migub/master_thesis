@@ -870,42 +870,52 @@ The Nash product bar chart highlights that \textbf{LA-GRPO fair-only produces th
 
 \subsection{Out-of-Domain Generalization: Trust Game}
 
-To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on. Two conditions are evaluated: each trained model plays against the frozen base model (Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee}), and each trained model plays against itself in selfplay (Table~\ref{tab:trust_selfplay}).
+To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on. GRPO models were evaluated over 50 games per condition; LA-GRPO models were evaluated over 300 games per condition. Two conditions are tested: each trained model plays against the frozen base model (Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee}), and each trained model plays against itself in selfplay (Table~\ref{tab:trust_selfplay}).
 
 \paragraph{Trained model vs.\ frozen base model.}
 Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee} show results when the trained model plays as investor and trustee, respectively, against the frozen base model in the other role.
 
 \begin{table}[H]
 \centering
-\caption{Trust Game results: trained model as Investor vs.\ frozen base model as Trustee.}
+\caption{Trust Game results: trained model as Investor vs.\ frozen base model as Trustee. Bold indicates best per row.}
 \label{tab:trust_investor}
-\begin{tabular}{lcccc}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccc}
 \toprule
-\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+& \textbf{Base} & \multicolumn{3}{c}{\textbf{GRPO}} & \multicolumn{3}{c}{\textbf{LA-GRPO}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+\textbf{Metric} & & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} \\
 \midrule
-Avg send & 5.00 ($\pm$0.00) & 5.38 ($\pm$0.49) & \textbf{5.48} ($\pm$0.74) & 5.04 ($\pm$0.20) \\
-Investor payoff & 16.02 & 15.04 & 15.08 & 15.86 \\
-Trustee payoff & 3.98 & 5.72 & 5.88 & 4.22 \\
-Social welfare & 20.00 & 20.76 & \textbf{20.96} & 20.08 \\
-Nash product & 62.5 & 80.8 & \textbf{83.1} & 65.1 \\
+Avg send & 5.00 & 5.38 & \textbf{5.48} & 5.04 & 5.22 & 5.05 & 5.06 \\
+Investor payoff & 15.94 & 15.04 & 15.08 & 15.86 & 15.56 & 16.02 & \textbf{16.13} \\
+Trustee payoff & 4.06 & 5.72 & \textbf{5.88} & 4.22 & 4.87 & 4.07 & 3.99 \\
+Social welfare & 20.00 & 20.76 & \textbf{20.96} & 20.08 & 20.43 & 20.09 & 20.13 \\
+Nash product & 63.4 & 80.8 & \textbf{83.1} & 65.1 & 71.3 & 62.9 & 61.4 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \begin{table}[H]
 \centering
-\caption{Trust Game results: frozen base model as Investor, trained model as Trustee.}
+\caption{Trust Game results: frozen base model as Investor, trained model as Trustee. Bold indicates best per row (excluding Investor payoff, where higher means the trustee returned more). The base sends exactly 5 with zero variance.}
 \label{tab:trust_trustee}
-\begin{tabular}{lcccc}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccc}
 \toprule
-\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+& \textbf{Base} & \multicolumn{3}{c}{\textbf{GRPO}} & \multicolumn{3}{c}{\textbf{LA-GRPO}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+\textbf{Metric} & & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} \\
 \midrule
-Return ratio & 72.4\% & 74.4\% & \textbf{78.8\%} & \textcolor{gray}{[INSERT]} \\
-Investor payoff & 15.86 & 16.16 & \textbf{16.82} & \textcolor{gray}{[INSERT]} \\
-Trustee payoff & 4.14 & 3.84 & 3.18 & \textcolor{gray}{[INSERT]} \\
-Nash product & 64.4 & 59.3 & 47.0 & \textcolor{gray}{[INSERT]} \\
+Return ratio & 0.739 & 0.744 & 0.788 & 0.757 & 0.758 & 0.739 & 0.714 \\
+Investor payoff & 16.09 & 16.16 & 16.82 & 16.36 & 16.38 & 16.08 & 15.71 \\
+Trustee payoff & 3.91 & 3.84 & 3.18 & 3.64 & 3.62 & 3.92 & \textbf{4.29} \\
+Nash product & \textbf{60.9} & 59.3 & 47.0 & 58.7 & 57.0 & 61.3 & \textbf{65.6} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \paragraph{Selfplay.}
@@ -915,29 +925,33 @@ Table~\ref{tab:trust_selfplay} shows results when the same trained model plays b
 \centering
 \caption{Trust Game results: selfplay (trained model plays both roles).}
 \label{tab:trust_selfplay}
-\begin{tabular}{lcccc}
+\renewcommand{\arraystretch}{1.15}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccc}
 \toprule
-\textbf{Metric} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
+& \textbf{Base} & \multicolumn{3}{c}{\textbf{GRPO}} & \multicolumn{3}{c}{\textbf{LA-GRPO}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+\textbf{Metric} & & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} & \textbf{Self} & \textbf{Fair} & \textbf{All-Equal} \\
 \midrule
-Avg send & 5.00 ($\pm$0.00) & 5.38 ($\pm$0.49) & 5.46 ($\pm$0.73) & 5.04 ($\pm$0.20) \\
-Social welfare & 20.00 & 20.76 & \textbf{20.92} & 20.08 \\
-Nash product & 62.5 & 76.2 & 74.9 & 62.3 \\
-Parse failure & 0\% & 0\% & 0\% & 0\% \\
+Avg send & 5.00 & 5.38 & 5.46 & 5.04 & 5.22 & 5.05 & 5.06 \\
+Social welfare & 20.00 & 20.76 & \textbf{20.92} & 20.08 & 20.43 & 20.09 & 20.13 \\
+Nash product & 63.4 & \textbf{76.2} & 74.9 & 62.3 & 68.4 & 64.6 & 65.7 \\
+Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsubsection{Analysis}
 
-\paragraph{Cooperative training transfers modestly to the Trust Game.} Fair-only as investor sends more ($5.48$ vs.\ $5.00$ baseline), breaking the base model's zero-variance ``always send half'' pattern. The resulting Nash product improvement ($83.1$ vs.\ $62.5$) represents a 33\% increase. The effect is small in absolute terms but points in the right direction: the model learned a cooperative disposition that transfers to an unseen game.
+\paragraph{Cooperative training transfers modestly to the Trust Game.} GRPO fair-only as investor sends more ($5.48$ vs.\ $5.00$ baseline), breaking the base model's zero-variance ``always send half'' pattern. The resulting Nash product improvement ($83.1$ vs.\ $63.4$) represents a 31\% increase. The effect is small in absolute terms but points in the right direction: the model learned a cooperative disposition that transfers to an unseen game.
 
-\paragraph{Fair-only learns generosity, not strategic cooperation.} As trustee, the fair-only model returns 78.8\% of received points (vs.\ 72.4\% baseline), making the investor better off but itself worse off (payoff $3.18$ vs.\ $3.98$). In negotiation, generosity is reciprocated; in the Trust Game's trustee role, it is one-directional and exploitable. The model learned cooperative behavior that is context-appropriate in negotiation but suboptimal in the Trust Game's asymmetric structure.
+\paragraph{LA-GRPO produces more conservative cooperative behavior.} The three LA-GRPO models all send close to $5.0$ as investor, very similar to the base model. This is a notable contrast to GRPO fair-only ($5.48$): turn-level credit assignment did not produce the same generous-investor behavior despite the same Nash product reward. A possible explanation is that LA-GRPO's longer training and turn-level focus made the model more attuned to the specific structure of multi-issue negotiations, reducing transfer to the simpler, single-decision Trust Game.
 
-\paragraph{All-equal shows minimal transfer to the Trust Game,} despite being the strongest model in the negotiation evaluation. This suggests that the Trust Game's simple two-turn structure does not benefit from the multi-objective reward signal that makes all-equal effective in complex multi-issue negotiations.
+\paragraph{LA-GRPO all-equal as trustee resists exploitation.} As trustee, LA-GRPO all-equal returns the smallest fraction ($71.4\%$) and ends up with the highest trustee payoff ($4.29$) and Nash product ($65.6$) of any tested model. In contrast, GRPO fair-only returns the most ($78.8\%$) but ends up worst off ($3.18$). The all-equal reward---which includes a self-interest term---prevents the model from over-returning, while the pure Nash product reward of fair-only encourages generosity that is exploitable in the Trust Game's asymmetric trustee role.
 
-\paragraph{Frozen opponent limits measurable effects.} The base model investor always sends exactly 5, creating a structural ceiling: social welfare $= 10 + 2 \times \text{send}$ is locked at 20 for the trustee condition. A self-play evaluation or evaluation against diverse opponents would likely reveal larger differences.
+\paragraph{Selfplay reveals a nuance.} In selfplay, GRPO self-only achieves the highest Nash product ($76.2$), followed by GRPO fair-only ($74.9$). Among LA-GRPO models, the differences are smaller (Nash $64.6$--$68.4$). When the trustee's generosity benefits itself (same model playing both roles), the dynamic changes: fair-only's tendency to over-return does not lead to exploitation.
 
-\paragraph{Selfplay reveals a nuance.} In selfplay, self-only achieves slightly higher Nash product ($76.2$) than fair-only ($74.9$). When the trustee's generosity benefits itself (same model playing both roles), the dynamic changes: fair-only's tendency to over-return does not lead to exploitation.
+\paragraph{Frozen opponent limits measurable effects.} The base model investor always sends exactly 5, creating a structural ceiling: social welfare $= 10 + 2 \times \text{send}$ is locked at $20$ for the trustee condition. A self-play evaluation or evaluation against diverse opponents would likely reveal larger differences.
 
 
 \subsection{Robustness to Defection (RQ4)}
