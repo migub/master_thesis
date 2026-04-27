@@ -202,7 +202,7 @@ LA-GRPO & GRPO + turn-level sampling & $G$ continuations from turn $h$ & Online 
 
 \subsection{Cooperative Reinforcement Learning and Social Objectives}
 
-\textcolor{gray}{[PLACEHOLDER: Section 2.4 to be rewritten.]}
+\textcolor{red}{\textit{[Section 2.4 in progress.]}}
 
 \subsection{Summary and Research Gap}
 
@@ -693,7 +693,7 @@ Table~\ref{tab:eval_results} presents the main evaluation results across all GRP
 Base Model & --- & 78.6\% & 49.9 \scriptsize{[47.2, 52.6]} & 0.702 \scriptsize{[0.671, 0.734]} & 0.585 \scriptsize{[0.556, 0.613]} \\
 Self-Only & 1/0/0 & 79.8\% & 54.9 \scriptsize{[52.0, 57.7]} & 0.723 \scriptsize{[0.691, 0.753]} & 0.581 \scriptsize{[0.552, 0.610]} \\
 Fair-Only & 0/0/1 & 89.6\% & 55.0 \scriptsize{[52.4, 57.6]} & 0.808 \scriptsize{[0.782, 0.833]} & 0.664 \scriptsize{[0.637, 0.689]} \\
-Welfare-Only & 0/1/0 & \multicolumn{4}{c}{\textcolor{gray}{[PENDING: evaluation not yet conducted]}} \\
+Welfare-Only & 0/1/0 & \multicolumn{4}{c}{\textcolor{red}{\textit{[Welfare-Only evaluation in progress]}}} \\
 \textbf{All-Equal} & \textbf{1/1/1} & \textbf{92.7\%} & \textbf{60.3} \scriptsize{[58.0, 62.6]} & \textbf{0.840} \scriptsize{[0.819, 0.861]} & \textbf{0.692} \scriptsize{[0.669, 0.716]} \\
 Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scriptsize{[0.727, 0.786]} & 0.625 \scriptsize{[0.596, 0.653]} \\
 \bottomrule
@@ -948,13 +948,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 
 \subsection{Robustness to Defection (RQ4)}
 
-\textcolor{gray}{[PLACEHOLDER: Tests against adversarial or selfish opponents have not yet been conducted. Planned approaches:}
-\begin{itemize}
-    \item \textcolor{gray}{Cooperative model vs.\ self-only model (cross-evaluation)}
-    \item \textcolor{gray}{Cooperative model vs.\ GPT-4o-mini as opponent}
-    \item \textcolor{gray}{Analysis of whether the cooperative agent can detect and respond to exploitation}
-\end{itemize}
-\textcolor{gray}{]}
+\textcolor{red}{\textit{[Section 5.7 in progress. Planned: tests against adversarial or selfish opponents (cooperative model vs.\ self-only, cooperative model vs.\ GPT-4o-mini, analysis of detection of exploitation).]}}
 
 
 \subsection{Language Quality and Benchmark Generalization (RQ5)}
@@ -992,7 +986,7 @@ LA-GRPO All-Equal & 0.688 & $-0.27$ & 0.848 & $-0.37$ & 0.880 & $-0.08$ \\
 
 \paragraph{RQ3 (Metrics).} The normalized \texttt{ratio\_rcoop} serves as the best composite training metric because it is comparable across game types. For evaluation, the Nash product is the single best cooperation metric (captures both efficiency and fairness), with agreement rate as a critical secondary signal.
 
-\paragraph{RQ4 (Robustness).} \textcolor{gray}{[PLACEHOLDER: Awaiting robustness evaluation results.]}
+\paragraph{RQ4 (Robustness).} \textcolor{red}{\textit{[In progress.]}}
 
 \paragraph{RQ5 (Capabilities).} Cooperative negotiation training does not measurably degrade general LLM capabilities. Both GRPO and LA-GRPO all-equal maintain MMLU-Pro, IFEval, and GSM8K scores within $\pm 0.6$ percentage points of the base model. This confirms that LoRA-based fine-tuning with KL regularization preserves the model's generalist profile, consistent with findings from \citet{franceschetti2025advantage} on competitive training.
 
