@@ -325,7 +325,7 @@ Each component is now in $[0, 1]$ regardless of game type. The function \texttt{
 
 \citet{caragiannis2019unreasonable} showed that Nash welfare simultaneously delivers efficiency and fairness. The welfare term is largely redundant: it only adds unique signal in integrative/compatible games where total value varies but the split is already balanced. In distributive games ($\sim$31\% of the training set), welfare has zero variance and provides no learning signal whatsoever. Self-interest ($\lambda_{\text{self}}$) acts as a stabilizer---without sufficient self-interest weight, the agent can learn degenerate strategies (e.g., always conceding to ensure high Nash product).
 
-While initial training metrics suggested that the all-equal configuration might underperform due to the welfare term's zero variance in distributive games, the full evaluation (Section~\ref{sec:results}) revealed a more nuanced picture: all-equal ultimately achieved the best overall performance, suggesting that the welfare signal contributes meaningfully in integrative settings despite being uninformative in distributive ones.
+While initial training metrics suggested that the all-equal configuration might underperform due to the welfare term's zero variance in distributive games, the full evaluation (Section~\ref{sec:results}) revealed a more nuanced picture: all-equal ultimately achieved the best overall performance in GRPO, suggesting that the welfare signal contributes meaningfully in integrative settings despite being uninformative in distributive ones.
 
 
 \subsection{Calculating Local Advantage}\label{sec:la_grpo}
