@@ -848,7 +848,7 @@ Figure~\ref{fig:nash_bar} compares the mean Nash product ($U_A \times U_B$) acro
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/nash_product_comparison.pdf}
-    \caption{Mean Nash product ($U_A \times U_B$) by model, computed over agreed negotiations only. LA-GRPO fair-only achieves the highest value (4775), indicating the most balanced and efficient deals. GRPO all-equal (4010) scores below the base model (4119) on this metric despite its superior aggregate performance---a consequence of closing many marginal deals that individually have lower quality.}
+    \caption{Mean Nash product ($U_A \times U_B$) by $\lambda$ configuration, computed over agreed negotiations only. Bars are grouped by reward configuration to enable direct GRPO vs.\ LA-GRPO comparison. The dashed line shows the base model reference (4119). LA-GRPO improves on GRPO across all three configurations, with the largest gain for fair-only (+750). Notably, GRPO fair-only and all-equal score \emph{below} the base model on this agreed-only metric---a consequence of closing more marginal deals---while LA-GRPO consistently exceeds the baseline.}
     \label{fig:nash_bar}
 \end{figure}
 
