@@ -959,39 +959,39 @@ Each persona is evaluated over 14 game configurations $\times$ 10 repetitions $=
 
 \begin{table}[H]
 \centering
-\caption{Robustness evaluation: LA-GRPO fair-only vs.\ base model against four adversarial personas. $\Delta$ shows the difference (LA-GRPO $-$ base). Bold indicates statistically meaningful improvements ($\Delta \geq 5$ pp on agreement or $\Delta \geq 0.1$ on ratio\_rcoop).}
+\caption{Robustness evaluation: LA-GRPO fair-only vs.\ base model against four adversarial personas (140 negotiations per cell). $\Delta$ shows the difference (LA-GRPO $-$ base). Agreement rate compared via Chi-squared test; $U_A$ and ratio $R_{\text{coop}}$ via Mann-Whitney U. Significance: $^* p < 0.05$, $^{**} p < 0.01$, $^{***} p < 0.001$, ns $=$ not significant.}
 \label{tab:robustness}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{llccc}
+\begin{tabular}{llcccl}
 \toprule
-\textbf{Persona} & \textbf{Metric} & \textbf{Base} & \textbf{LA-GRPO Fair} & $\boldsymbol{\Delta}$ \\
+\textbf{Persona} & \textbf{Metric} & \textbf{Base} & \textbf{LA-GRPO Fair} & $\boldsymbol{\Delta}$ & \textbf{$p$-value} \\
 \midrule
 \multirow{3}{*}{Hardball}
- & Agreement rate    & 26.4\% & 56.4\% & \textbf{+30.0 pp} \\
- & $U_A$             & 14.5   & 30.2   & \textbf{+15.7} \\
- & Ratio $R_{\text{coop}}$ & 0.145 & 0.367 & \textbf{+0.222} \\
+ & Agreement rate    & 26.4\% & 56.4\% & $+$30.0 pp & $<$0.001\,$^{***}$ \\
+ & $U_A$             & 14.5   & 30.2   & $+$15.7    & $<$0.001\,$^{***}$ \\
+ & Ratio $R_{\text{coop}}$ & 0.145 & 0.367 & $+$0.222 & $<$0.001\,$^{***}$ \\
 \addlinespace
 \multirow{3}{*}{Deceptive}
- & Agreement rate    & 65.7\% & 81.4\% & \textbf{+15.7 pp} \\
- & $U_A$             & 39.8   & 47.6   & \textbf{+7.8} \\
- & Ratio $R_{\text{coop}}$ & 0.398 & 0.606 & \textbf{+0.208} \\
+ & Agreement rate    & 65.7\% & 81.4\% & $+$15.7 pp & 0.004\,$^{**}$ \\
+ & $U_A$             & 39.8   & 47.6   & $+$7.8     & 0.066\,ns \\
+ & Ratio $R_{\text{coop}}$ & 0.398 & 0.606 & $+$0.208 & $<$0.001\,$^{***}$ \\
 \addlinespace
 \multirow{3}{*}{Anchoring}
- & Agreement rate    & 55.0\% & 77.1\% & \textbf{+22.1 pp} \\
- & $U_A$             & 36.5   & 44.0   & \textbf{+7.5} \\
- & Ratio $R_{\text{coop}}$ & 0.365 & 0.515 & \textbf{+0.150} \\
+ & Agreement rate    & 55.0\% & 77.1\% & $+$22.1 pp & $<$0.001\,$^{***}$ \\
+ & $U_A$             & 36.5   & 44.0   & $+$7.5     & 0.028\,$^{*}$ \\
+ & Ratio $R_{\text{coop}}$ & 0.365 & 0.515 & $+$0.150 & 0.001\,$^{**}$ \\
 \addlinespace
 \multirow{3}{*}{Stubborn}
- & Agreement rate    & 22.1\% & 14.3\% & $-$7.8 pp \\
- & $U_A$             & 16.2   & 11.1   & $-$5.1 \\
- & Ratio $R_{\text{coop}}$ & 0.162 & 0.120 & $-$0.042 \\
+ & Agreement rate    & 22.1\% & 14.3\% & $-$7.8 pp  & 0.122\,ns \\
+ & $U_A$             & 16.2   & 11.1   & $-$5.1     & 0.167\,ns \\
+ & Ratio $R_{\text{coop}}$ & 0.162 & 0.120 & $-$0.042 & 0.186\,ns \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Cooperative training improves robustness against three of four adversarial strategies.} Against \textit{hardball}, the most aggressive opponent, the cooperative agent achieves the largest improvement: agreement rate more than doubles ($26.4\% \to 56.4\%$) and $U_A$ also more than doubles ($14.5 \to 30.2$). Where the base model gets ``squeezed'' by hardball tactics, the cooperative agent recovers substantial value. Improvements against \textit{deceptive} and \textit{anchoring} opponents are also clearly positive ($+16$ and $+22$ pp agreement), suggesting that cooperative training does not merely produce naive generosity but also a more effective negotiation strategy.
+\paragraph{Cooperative training improves robustness against three of four adversarial strategies.} Against \textit{hardball}, the most aggressive opponent, the cooperative agent achieves the largest and most clearly significant improvement: agreement rate more than doubles ($26.4\% \to 56.4\%$, $p < 0.001$) and $U_A$ also more than doubles ($14.5 \to 30.2$, $p < 0.001$). Where the base model gets ``squeezed'' by hardball tactics, the cooperative agent recovers substantial value. Improvements against \textit{deceptive} and \textit{anchoring} opponents are also clearly positive, with significant gains in agreement rate ($+15.7$ and $+22.1$ percentage points, both $p < 0.01$) and ratio $R_{\text{coop}}$ ($p < 0.01$). The increase in $U_A$ for deceptive opponents fails to reach statistical significance ($p = 0.066$), but the direction is consistent.
 
-\paragraph{Stubborn opponents are the exception.} Against \textit{stubborn}, the cooperative agent slightly underperforms the base model ($-7.8$ pp agreement, $-5.1$ on $U_A$). Both models struggle---neither can overcome rigid refusal---but the trained model is marginally less able to break the deadlock. A possible explanation: the cooperative agent is more willing to accept ``no'' as a final answer rather than escalating, while the base model occasionally pushes through with another proposal that happens to land. Notably, when agreements \emph{are} reached against stubborn opponents, their quality is the highest of any cell ($\text{agreed } R_{\text{coop}} = 0.843$): the cooperative agent only closes deals that are genuinely good.
+\paragraph{Stubborn opponents are the exception.} Against \textit{stubborn}, the cooperative agent's lower agreement rate ($-7.8$ pp) and $U_A$ ($-5.1$) are \emph{not} statistically significant ($p = 0.122$ and $p = 0.167$); both models struggle similarly, and the apparent difference falls within sampling noise. A possible explanation: the cooperative agent is more willing to accept ``no'' as a final answer rather than escalating, while the base model occasionally pushes through with another proposal that happens to land. Notably, when agreements \emph{are} reached against stubborn opponents, their quality is the highest of any cell ($\text{agreed } R_{\text{coop}} = 0.843$): the cooperative agent only closes deals that are genuinely good.
 
 \paragraph{Summary (RQ4).} Cooperative training does not produce an exploitable agent. On the contrary, against the most aggressive adversarial personas (hardball, anchoring), cooperative training substantially improves outcomes. The single weakness against stubborn opponents reflects an inability to force agreements rather than vulnerability to manipulation.
 
