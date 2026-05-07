@@ -946,7 +946,54 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 
 \subsection{Robustness to Defection (RQ4)}
 
-\textcolor{red}{\textit{[Section 5.7 in progress. Planned: tests against adversarial or selfish opponents (cooperative model vs.\ self-only, cooperative model vs.\ GPT-4o-mini, analysis of detection of exploitation).]}}
+To evaluate whether cooperative training preserves negotiation effectiveness against adversarial counterparts, the LA-GRPO fair-only model (checkpoint 1340) is tested against four adversarial opponent personas, each implemented as a system-prompt variant of the base model. The four personas represent distinct manipulation strategies documented in negotiation research:
+
+\begin{itemize}
+    \item \textbf{Hardball}: aggressive, extreme initial offers, refusing to concede.
+    \item \textbf{Deceptive}: misrepresenting preferences and feigning commitment.
+    \item \textbf{Anchoring}: using extreme initial positions to bias the negotiation \citep{tversky1974judgment}.
+    \item \textbf{Stubborn}: rigid refusal to compromise regardless of justification.
+\end{itemize}
+
+Each persona is evaluated over 14 game configurations $\times$ 10 repetitions $=$ 140 negotiations per condition. Both base model and LA-GRPO fair-only are tested under identical conditions to isolate the effect of training.
+
+\begin{table}[H]
+\centering
+\caption{Robustness evaluation: LA-GRPO fair-only vs.\ base model against four adversarial personas. $\Delta$ shows the difference (LA-GRPO $-$ base). Bold indicates statistically meaningful improvements ($\Delta \geq 5$ pp on agreement or $\Delta \geq 0.1$ on ratio\_rcoop).}
+\label{tab:robustness}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Persona} & \textbf{Metric} & \textbf{Base} & \textbf{LA-GRPO Fair} & $\boldsymbol{\Delta}$ \\
+\midrule
+\multirow{3}{*}{Hardball}
+ & Agreement rate    & 26.4\% & 56.4\% & \textbf{+30.0 pp} \\
+ & $U_A$             & 14.5   & 30.2   & \textbf{+15.7} \\
+ & Ratio $R_{\text{coop}}$ & 0.145 & 0.367 & \textbf{+0.222} \\
+\addlinespace
+\multirow{3}{*}{Deceptive}
+ & Agreement rate    & 65.7\% & 81.4\% & \textbf{+15.7 pp} \\
+ & $U_A$             & 39.8   & 47.6   & \textbf{+7.8} \\
+ & Ratio $R_{\text{coop}}$ & 0.398 & 0.606 & \textbf{+0.208} \\
+\addlinespace
+\multirow{3}{*}{Anchoring}
+ & Agreement rate    & 55.0\% & 77.1\% & \textbf{+22.1 pp} \\
+ & $U_A$             & 36.5   & 44.0   & \textbf{+7.5} \\
+ & Ratio $R_{\text{coop}}$ & 0.365 & 0.515 & \textbf{+0.150} \\
+\addlinespace
+\multirow{3}{*}{Stubborn}
+ & Agreement rate    & 22.1\% & 14.3\% & $-$7.8 pp \\
+ & $U_A$             & 16.2   & 11.1   & $-$5.1 \\
+ & Ratio $R_{\text{coop}}$ & 0.162 & 0.120 & $-$0.042 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Cooperative training improves robustness against three of four adversarial strategies.} Against \textit{hardball}, the most aggressive opponent, the cooperative agent achieves the largest improvement: agreement rate more than doubles ($26.4\% \to 56.4\%$) and $U_A$ also more than doubles ($14.5 \to 30.2$). Where the base model gets ``squeezed'' by hardball tactics, the cooperative agent recovers substantial value. Improvements against \textit{deceptive} and \textit{anchoring} opponents are also clearly positive ($+16$ and $+22$ pp agreement), suggesting that cooperative training does not merely produce naive generosity but also a more effective negotiation strategy.
+
+\paragraph{Stubborn opponents are the exception.} Against \textit{stubborn}, the cooperative agent slightly underperforms the base model ($-7.8$ pp agreement, $-5.1$ on $U_A$). Both models struggle---neither can overcome rigid refusal---but the trained model is marginally less able to break the deadlock. A possible explanation: the cooperative agent is more willing to accept ``no'' as a final answer rather than escalating, while the base model occasionally pushes through with another proposal that happens to land. Notably, when agreements \emph{are} reached against stubborn opponents, their quality is the highest of any cell ($\text{agreed } R_{\text{coop}} = 0.843$): the cooperative agent only closes deals that are genuinely good.
+
+\paragraph{Summary (RQ4).} Cooperative training does not produce an exploitable agent. On the contrary, against the most aggressive adversarial personas (hardball, anchoring), cooperative training substantially improves outcomes. The single weakness against stubborn opponents reflects an inability to force agreements rather than vulnerability to manipulation.
 
 
 \subsection{Language Quality and Benchmark Generalization (RQ5)}
@@ -984,7 +1031,7 @@ LA-GRPO All-Equal & 0.688 & $-0.27$ & 0.848 & $-0.37$ & 0.880 & $-0.08$ \\
 
 \paragraph{RQ3 (Metrics).} The normalized \texttt{ratio\_rcoop} serves as the best composite training metric because it is comparable across game types. For evaluation, the Nash product is the single best cooperation metric (captures both efficiency and fairness), with agreement rate as a critical secondary signal.
 
-\paragraph{RQ4 (Robustness).} \textcolor{red}{\textit{[In progress.]}}
+\paragraph{RQ4 (Robustness).} Cooperative training does not produce an exploitable agent against adversarial counterparts. The LA-GRPO fair-only model substantially outperforms the base model when facing hardball ($+30$ pp agreement, $+15.7$ on $U_A$), deceptive ($+15.7$ pp), and anchoring ($+22.1$ pp) opponents. The single exception is stubborn opponents, where both models collapse and the trained agent is marginally less effective at forcing agreements; however, when deals are reached, their quality is the highest of any tested cell.
 
 \paragraph{RQ5 (Capabilities).} Cooperative negotiation training does not measurably degrade general LLM capabilities. Both GRPO and LA-GRPO all-equal maintain MMLU-Pro, IFEval, and GSM8K scores within $\pm 0.6$ percentage points of the base model. This confirms that LoRA-based fine-tuning with KL regularization preserves the model's generalist profile, consistent with findings from \citet{franceschetti2025advantage} on competitive training.
 
