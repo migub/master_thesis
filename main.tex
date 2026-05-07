@@ -848,13 +848,13 @@ Figure~\ref{fig:nash_bar} compares the mean Nash product ($U_A \times U_B$) acro
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/nash_product_comparison.pdf}
-    \caption{Mean Nash product ($U_A \times U_B$) by $\lambda$ configuration, computed over agreed negotiations only. Bars are grouped by reward configuration to enable direct GRPO vs.\ LA-GRPO comparison. The dashed line shows the base model reference (4119). LA-GRPO improves on GRPO across all three configurations, with the largest gain for fair-only (+750). Notably, GRPO fair-only and all-equal score \emph{below} the base model on this agreed-only metric---a consequence of closing more marginal deals---while LA-GRPO consistently exceeds the baseline.}
+    \caption{Mean game-normalized Nash ratio by $\lambda$ configuration. The Nash ratio is the achieved Nash product divided by the maximum possible Nash product for that game (in $[0, 1]$); failed negotiations contribute zero. Bars are grouped by reward configuration to enable direct GRPO vs.\ LA-GRPO comparison; the dashed line shows the base model reference (0.585). LA-GRPO outperforms GRPO for the single-objective configurations (self-only and fair-only), while for the blended all-equal reward GRPO and LA-GRPO perform comparably. All trained configurations except GRPO self-only exceed the base model.}
     \label{fig:nash_bar}
 \end{figure}
 
 \paragraph{Key observations.} The scatter plots reveal distinct negotiation \emph{styles} shaped by the reward function. Self-only models (both GRPO and LA-GRPO) produce outcomes skewed below the diagonal---the agent extracts more value at the opponent's expense. Fair-only models cluster closer to the diagonal, reflecting the Nash product's preference for balanced outcomes. All-equal falls between the two.
 
-The Nash product bar chart highlights that \textbf{LA-GRPO fair-only produces the highest-quality deals} of any model ($U_A \times U_B = 4775$), $16\%$ above the base model ($4119$). An interesting nuance is that GRPO all-equal scores \emph{below} the base model on this agreed-only metric ($4010$ vs.\ $4119$), despite being the strongest GRPO model on aggregate metrics (Table~\ref{tab:eval_results}). This apparent paradox is explained by GRPO all-equal's high agreement rate ($92.7\%$): it closes many marginal deals that individually have lower Nash product, but the sheer volume of deals compensates in aggregate metrics.
+The Nash ratio bar chart shows the game-normalized Nash product across configurations. \textbf{LA-GRPO outperforms GRPO for the single-objective configurations}: self-only ($0.684$ vs.\ $0.581$) and fair-only ($0.693$ vs.\ $0.664$). For the blended all-equal reward, GRPO ($0.692$) and LA-GRPO ($0.680$) perform comparably, suggesting that multi-objective rewards already provide sufficient gradient diversity without turn-level decomposition. GRPO self-only essentially matches the base model ($0.581$ vs.\ $0.585$), confirming that pure self-interest provides no cooperative benefit; all other trained configurations exceed the baseline.
 
 
 \subsection{Out-of-Domain Generalization: Trust Game}
