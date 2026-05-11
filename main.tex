@@ -802,7 +802,7 @@ Integrative & 0.715 & \textbf{0.920} & 0.872 \\
 \paragraph{Self-only negotiates aggressively.} The payoff balance $U_A / U_B$ confirms that self-only splits outcomes in its own favor: 56.0/44.0 on distributive games and 65.8/46.1 on integrative games. Fair-only produces more symmetric splits (54.4/45.6 and 55.9/60.5), and all-equal even concedes a slight advantage to the opponent on distributive games (47.6/52.4).
 
 
-\subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}
+\subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}\label{sec:grpo_vs_lagrpo}
 
 Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations. LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620), but each step is more token-efficient due to the shared prefix mechanism. This means the comparison reflects the methods at roughly comparable token budgets rather than matched step counts.
 
@@ -1033,9 +1033,49 @@ LA-GRPO All-Equal & 0.688 & $-0.27$ & 0.848 & $-0.37$ & 0.880 & $-0.08$ \\
 \paragraph{Interpretation.} The negotiation-specific RL training preserves the model's generalist capability profile. This is consistent with the training setup: LoRA adapts only a small fraction of the model's parameters, and KL regularization constrains the policy from diverging too far from the base model. In practice, this means the model can be taught to negotiate cooperatively without giving up its ability to reason, follow instructions, or solve general tasks---the skills it started with remain intact. \citet{franceschetti2025advantage} reported a similar finding for competitive LA-GRPO training on LLaMA-3.1-8B, and the present results confirm that this robustness extends to cooperative reward objectives and a larger model.
 
 
+\subsection{Matched-Budget Comparison: GRPO vs.\ LA-GRPO}
+\label{sec:matched_budget}
+
+The GRPO vs.\ LA-GRPO comparison in Section~\ref{sec:grpo_vs_lagrpo} compared each method at its respective convergence point: GRPO at 560--620 steps, LA-GRPO at 1340--2000 steps. This reflects how the methods would be deployed in practice, but it conflates two distinct effects---the quality of the credit assignment mechanism and the total compute budget. To isolate the effect of turn-level credit assignment from training duration, this section presents an additional comparison at \emph{matched compute budgets}.
+
+\paragraph{Setup.} GRPO at checkpoint 560 and LA-GRPO at checkpoint 760 were chosen as token-equivalent training endpoints: while LA-GRPO uses fewer tokens per step (shared dialogue prefix), this is compensated by training for more steps. Both methods are evaluated on a held-out set of 18 game configurations (samples 10--27, not seen during training) with 10 repetitions per game and starting role, yielding 360 negotiations per model. This out-of-sample setup also tests generalization to unseen games.
+
+\begin{table}[H]
+\centering
+\caption{GRPO vs.\ LA-GRPO at matched compute budget (GRPO ckpt 560, LA-GRPO ckpt 760). Out-of-sample evaluation on 18 held-out game configurations, 360 negotiations per model. Bold indicates better per row within each $\lambda$ pair.}
+\label{tab:matched_budget}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{llcccc}
+\toprule
+$\lambda$ \textbf{Config} & \textbf{Method} & \textbf{Agreement} & $\mathbf{U_A}$ & \textbf{Ratio Nash} & \textbf{Ratio Welfare} \\
+\midrule
+Base & --- & 76.4\% & 48.4 & 0.570 & 0.680 \\
+\addlinespace
+\multirow{2}{*}{Self-Only (1/0/0)} & GRPO & \textbf{80.8\%} & \textbf{51.5} & \textbf{0.559} & \textbf{0.710} \\
+ & LA-GRPO & 79.4\% & 51.0 & 0.461 & 0.689 \\
+\addlinespace
+\multirow{2}{*}{Fair-Only (0/0/1)} & GRPO & \textbf{93.1\%} & \textbf{54.6} & \textbf{0.660} & \textbf{0.811} \\
+ & LA-GRPO & 77.5\% & 50.8 & 0.552 & 0.673 \\
+\addlinespace
+\multirow{2}{*}{All-Equal (1/1/1)} & GRPO & 91.9\% & \textbf{61.0} & 0.665 & \textbf{0.813} \\
+ & LA-GRPO & \textbf{95.0\%} & 59.1 & \textbf{0.694} & 0.832 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Matched-budget findings.} The picture at matched compute differs substantially from the convergence-point comparison. For \textbf{single-objective rewards} (self-only, fair-only), GRPO outperforms LA-GRPO clearly: Fair-Only GRPO reaches $93.1\%$ agreement vs.\ LA-GRPO's $77.5\%$, a gap of $15.6$ percentage points. For the \textbf{blended all-equal reward}, LA-GRPO retains a small advantage ($+3.1$ pp agreement, $+0.029$ ratio Nash). The combined result suggests that LA-GRPO is \emph{not inherently more sample-efficient}; rather, it needs additional training time to converge for single-objective rewards, while reaching parity (or slight advantage) earlier for multi-objective rewards.
+
+\paragraph{Implication for RQ1.} The two perspectives---convergence-point (Section~\ref{sec:grpo_vs_lagrpo}) and matched-budget (this section)---are complementary rather than contradictory. They answer different questions:
+\begin{itemize}
+    \item \emph{``Which method produces better negotiators in deployment?''} $\to$ LA-GRPO at its convergence point, particularly for single-objective rewards.
+    \item \emph{``Which method is more compute-efficient?''} $\to$ GRPO for single-objective rewards, LA-GRPO for multi-objective rewards.
+\end{itemize}
+The robust finding across both comparisons is that the \textbf{combination of turn-level credit assignment with the multi-objective all-equal reward} performs consistently well: it leads in the matched-budget comparison and remains competitive at full convergence. This suggests that the value of LA-GRPO lies less in faster learning and more in its ability to refine multi-objective signals over longer training horizons.
+
+
 \subsection{Comparative Discussion}
 
-\paragraph{RQ1 (LA-GRPO).} Turn-level credit assignment improves cooperative negotiation learning, but the effect is reward-dependent. For single-objective rewards, LA-GRPO provides substantial gains: self-only achieves $95.5\%$ agreement (vs.\ $79.8\%$ GRPO), and fair-only achieves the highest per-deal Nash ratio of any model ($0.787$ agreed). For the blended all-equal reward, however, LA-GRPO and GRPO perform nearly identically, suggesting that multi-objective rewards already provide sufficient gradient diversity without turn-level decomposition. The combination of LA-GRPO with Nash product reward ($\lambda_{\text{fair}} = 1.0$) emerges as the most effective configuration for cooperative negotiation quality.
+\paragraph{RQ1 (LA-GRPO).} Turn-level credit assignment improves cooperative negotiation learning, but the magnitude depends on the reward function and the training budget. At their respective convergence points (Section~\ref{sec:grpo_vs_lagrpo}), LA-GRPO substantially outperforms GRPO for single-objective rewards---self-only achieves $95.5\%$ agreement (vs.\ $79.8\%$ GRPO), and fair-only achieves the highest per-deal Nash ratio of any model ($0.787$ agreed). At matched compute budgets (Section~\ref{sec:matched_budget}), however, GRPO is faster to converge for single-objective rewards, while LA-GRPO retains a small advantage for the blended all-equal reward. The robust finding across both comparisons is that the combination of LA-GRPO with multi-objective rewards is the most consistently effective configuration---suggesting that the value of turn-level credit assignment lies in refining complex reward signals over longer training, rather than in faster learning.
 
 \paragraph{RQ2 (Reward Balance).} The evaluation reveals a clear ranking: all-equal ($\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$) outperforms all other configurations, followed by fair-only, self-fair-equal, and self-only. This refutes hypothesis H3, which predicted that all-equal would underperform due to the welfare term's zero variance in distributive games. Instead, the combination of all three reward components proves most effective---the welfare term provides complementary signal in integrative settings that Nash product alone does not capture. Removing welfare (self-fair-equal vs.\ all-equal) significantly hurts performance ($p < 0.001$ on agreement rate), and pure self-interest (self-only) fails to improve cooperative metrics over baseline at all. The Nash product remains the strongest \emph{individual} cooperative signal (fair-only $\gg$ self-only), consistent with \citet{caragiannis2019unreasonable}, but combining it with welfare and self-interest yields the best results.
 
@@ -1060,7 +1100,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 \begin{enumerate}
     \item \textbf{Cooperative reward function with game-normalized ratios} that balances self-interest, social welfare, and fairness while ensuring scale-invariant training signal across heterogeneous game types.
 
-    \item \textbf{$\lambda$ ablation across GRPO and LA-GRPO} reveals distinct roles for each reward component: the Nash product ($\lambda_{\text{fair}}$) is the strongest individual cooperative signal, self-interest ($\lambda_{\text{self}}$) alone improves payoff but not cooperation, and welfare ($\lambda_{\text{welfare}}$) alone is weak but essential in combination---refuting hypothesis H3. The combined GRPO reward (all-equal) performs best overall, nearly doubling agreement rate on the hardest archetype ($47.5\% \to 95.0\%$). LA-GRPO substantially improves single-objective configurations---LA-GRPO fair-only achieves the highest per-deal cooperation of any model ($0.787$ agreed Nash)---but for the blended all-equal reward, GRPO and LA-GRPO perform comparably.
+    \item \textbf{$\lambda$ ablation across GRPO and LA-GRPO} reveals distinct roles for each reward component: the Nash product ($\lambda_{\text{fair}}$) is the strongest individual cooperative signal, self-interest ($\lambda_{\text{self}}$) alone improves payoff but not cooperation, and welfare ($\lambda_{\text{welfare}}$) alone is weak but essential in combination---refuting hypothesis H3. The combined GRPO reward (all-equal) performs best overall, nearly doubling agreement rate on the hardest archetype ($47.5\% \to 95.0\%$). At full convergence, LA-GRPO substantially improves single-objective configurations (e.g., LA-GRPO fair-only reaches the highest per-deal cooperation of any model, $0.787$ agreed Nash); at matched compute budgets, however, GRPO converges faster for single-objective rewards, while LA-GRPO retains an advantage only for the blended all-equal reward.
 
     \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 33\% higher Nash product ($83.1$ vs.\ $62.5$).
 
