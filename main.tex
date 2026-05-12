@@ -112,10 +112,10 @@ To that end, the following key research questions are investigated:
 
 \begin{enumerate}[label={}, leftmargin=0pt, itemsep=1.2em]
     \item \textbf{RQ1: Turn-Level Learning:} Does applying LA-GRPO at the single-turn level improve learning performance in cooperative negotiation games?
-    \par This question tests whether applying LA-GRPO at the single-turn level improves negotiation outcomes compared to baseline GRPO. Performance is compared by measuring negotiation outcomes (agreement rate, agent payoff $U_A$, Nash product) at both full convergence and at matched compute budgets to disentangle method quality from training duration.
+    \par This question tests whether applying LA-GRPO at the single-turn level improves negotiation outcomes compared to baseline GRPO. The two methods are compared on three key metrics (agreement rate, agent payoff $U_A$, Nash product) in two ways: once at the end of training (full convergence), and once at the same compute budget. This makes it possible to separate the effect of the method itself from the effect of longer training.
 
     \item \textbf{RQ2: Reward Function Design:} How can reward functions be designed to balance individual payoff maximization with collective welfare and fairness?
-    \par This question investigates how different scalar reward compositions affect negotiation outcomes. Various weightings of self-utility, social welfare, and fairness ($\lambda$ parameters) will be evaluated through ablation studies. Success is indicated by higher joint welfare and Pareto efficiency without sacrificing individual payoff.
+    \par This question looks at how different ways of combining reward components affect negotiation results. Five reward setups are tested by varying the weights ($\lambda$ parameters) on self-interest, social welfare, and fairness. A good setup produces high joint value and balanced outcomes without making the agent's own payoff much worse.
 
     \item \textbf{RQ3: Cooperation-Focused Metrics:} Which evaluation metrics best capture cooperative success in negotiation beyond traditional utility scores?
     \par This question examines which evaluation metrics best capture cooperative behavior. In addition to individual utility ($U_A$), outcomes are assessed using social welfare ($U_A + U_B$), Nash product ($U_A \times U_B$), and game-normalized ratios that enable comparison across heterogeneous game configurations. Scatter plots of $U_A$ vs.\ $U_B$ are used to visualize the distribution of negotiation outcomes relative to the equal-payoff diagonal.
