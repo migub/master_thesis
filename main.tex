@@ -143,7 +143,7 @@ This chapter provides the conceptual foundation for the thesis. It connects nego
 
 \subsection{Negotiations as Multi-Agent Decision Processes}
 
-Franceschetti formulated multi-turn negotiation as a Markov Decision Process (MDP), where states $s_t$ correspond to the dialogue history up to turn $t$, actions $a_t$ represent the next utterance, and a terminal reward $R(s_N)$ is assigned at the end of the negotiation based on the agreed outcome. Two agents alternate offers over $N=5$ rounds each, following an alternating-offer protocol.
+Franceschetti formulated multi-turn negotiation as a Markov Decision Process (MDP), where states $s_t$ correspond to the dialogue history of utterances $\{u_0, u_1, \ldots, u_{t-1}\}$ exchanged up to turn $t$, actions $a_t$ represent the next utterance $u_t$, and a terminal reward $R(s_N)$ is assigned at the end of the negotiation based on the agreed outcome. Two agents alternate offers over $N=5$ rounds each, following an alternating-offer protocol. The agent's payoff is denoted $U_A$ and the opponent's payoff $U_B$; both are computed from the issue values agreed upon at the end of the negotiation.
 
 Formally, the negotiation is defined as a tuple $\mathcal{M} = (\mathcal{S}, \mathcal{A}, P, R, \gamma)$:
 
@@ -180,7 +180,7 @@ A more recent result by \citet{caragiannis2019unreasonable} strengthens the case
 \label{tab:alignment_methods}
 \begin{tabular}{llll}
 \toprule
-\textbf{Method} & \textbf{Loss} & \textbf{Sampling} & \textbf{Pipeline} \\
+\textbf{Method} & \textbf{Loss} & \textbf{Sampling} & \textbf{Mode} \\
 \midrule
 DPO & Sigmoid preference & Full trajectory & Offline \\
 REFUEL & Quadratic advantage & Turn-level & Offline \\
@@ -190,11 +190,11 @@ LA-GRPO & GRPO + turn-level sampling & $G$ continuations from turn $h$ & Online 
 \end{tabular}
 \end{table}
 
-\paragraph{DPO.} \citet{rafailov2023direct} proposed Direct Preference Optimization, a preference-based post-training method that optimizes LLMs from human comparison data without explicit reward models. Being offline and preference-based, it lacks exploration and is limited to the quality of existing comparison data; a baseline for later multi-turn approaches.
+\paragraph{DPO.} \citet{rafailov2023direct} proposed Direct Preference Optimization, a preference-based post-training method that optimizes LLMs from human comparison data without explicit reward models. Being offline and preference-based, it lacks exploration and is limited to the quality of existing comparison data; this motivates the move toward online methods discussed below.
 
 \paragraph{REFUEL.} \citet{gao2024regressing} presented REFUEL, a turn-level reinforcement-learning approach that isolates individual dialogue turns to propagate final rewards, partially solving the credit-assignment problem. However, it remains offline and does not benefit from on-policy exploration.
 
-\paragraph{GRPO.} \citet{shao2024deepseekmathpushinglimitsmathematical} introduced Group Relative Policy Optimization, an online reinforcement-learning method comparing grouped trajectories instead of using a value function. It generates $G$ independent trajectories per prompt and computes group-relative advantages $A_i = (R_i - \mu) / \sigma$. This on-policy method avoids the need for a value function but assigns the same advantage to every token in a trajectory, creating a noisy learning signal for multi-turn dialogues. GRPO is the precursor to LA-GRPO.
+\paragraph{GRPO.} \citet{shao2024deepseekmathpushinglimitsmathematical} introduced Group Relative Policy Optimization, an online reinforcement-learning method comparing grouped trajectories instead of using a value function. It generates $G$ independent trajectories per prompt and computes group-relative advantages $A_i = (R_i - \mu) / \sigma$. This on-policy method avoids the need for a value function but assigns the same trajectory-level advantage to every turn, creating a noisy learning signal for multi-turn dialogues where some turns contribute more than others to the final outcome. GRPO is the precursor to LA-GRPO.
 
 \paragraph{LA-GRPO.} \citet{franceschetti2025advantage} extended GRPO with turn-level sampling: a shared prefix is played until a randomly sampled turn $h$, then $G$ independent continuations are generated. Since all reward variation comes from decisions at turn $h$ onward, the advantage signal provides local credit assignment---the model learns which turn-level decisions matter. LA-GRPO outperformed traditional GRPO in complex bargaining settings, achieving more efficient and effective negotiation strategies.
 
