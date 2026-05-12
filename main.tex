@@ -104,7 +104,7 @@ A central aspect of this exploration is the learning process itself. Franceschet
 \par
 The thesis employs multi-issue negotiation tasks as test environments. Unlike a simple single-issue deal where one side's gain equals the other's loss, multi-issue negotiations allow for trade-offs that benefit both sides. Examples include the Nash Bargaining Game and the Two-Issue Bargaining Problem, which will be explained further in the next chapter.
 \par
-Finally, cooperation must of course be tempered with robustness to defection. In practice, a negotiator (whether human or AI) should be willing to cooperate but not naïvely so -- it must be resilient if the other side attempts to cheat, bluff, or unduly take advantage of goodwill. Therefore, a subtler aspect of the thesis's scope is investigating how LLM agents can maintain a cooperative stance that welcomes mutual trust, but also detect and appropriately respond to uncooperative behavior by others. The aim is to cultivate agents that promote collaboration by default, but can fall back on protective tactics if needed, ensuring they are not easily exploited. This balance between collaboration and caution is critical for real-world deployment: it mirrors the way effective human negotiators build trust and find common ground, while still preparing for worst-case scenarios.
+Finally, cooperation must of course be tempered with robustness to defection. In practice, a negotiator (whether human or AI) should be willing to cooperate but not naïvely so---it should remain effective if the other side attempts to use aggressive or manipulative tactics. A subtler aspect of the thesis's scope is therefore to explore whether cooperative agents maintain their negotiation performance when facing adversarial counterparts, rather than collapsing into either exploitation or unproductive resistance. This balance between collaboration and robustness is critical for real-world deployment: it mirrors the way effective human negotiators build trust and find common ground, while still holding firm against bad-faith partners.
 
 
 \subsection{Research Questions}
@@ -112,7 +112,7 @@ To that end, the following key research questions are investigated:
 
 \begin{enumerate}[label={}, leftmargin=0pt, itemsep=1.2em]
     \item \textbf{RQ1: Turn-Level Learning:} Does applying LA-GRPO at the single-turn level improve learning performance in cooperative negotiation games?
-    \par This question tests whether applying LA-GRPO at the single-turn level improves learning stability and convergence in cooperative negotiations. Performance will be compared against baseline GRPO by measuring mean negotiation reward, convergence rate, and token efficiency across multiple training runs.
+    \par This question tests whether applying LA-GRPO at the single-turn level improves negotiation outcomes compared to baseline GRPO. Performance is compared by measuring negotiation outcomes (agreement rate, agent payoff $U_A$, Nash product) at both full convergence and at matched compute budgets to disentangle method quality from training duration.
 
     \item \textbf{RQ2: Reward Function Design:} How can reward functions be designed to balance individual payoff maximization with collective welfare and fairness?
     \par This question investigates how different scalar reward compositions affect negotiation outcomes. Various weightings of self-utility, social welfare, and fairness ($\lambda$ parameters) will be evaluated through ablation studies. Success is indicated by higher joint welfare and Pareto efficiency without sacrificing individual payoff.
@@ -121,10 +121,10 @@ To that end, the following key research questions are investigated:
     \par This question examines which evaluation metrics best capture cooperative behavior. In addition to individual utility, outcomes will be assessed using social welfare, Nash product, and fairness indices. Pareto front analysis and equality metrics will be used to identify efficiency--fairness trade-offs.
 
     \item \textbf{RQ4: Robustness to Defection:} Can LLMs trained for cooperation maintain robustness and negotiation effectiveness when facing non-cooperative or adversarial counterparts?
-    \par This question assesses whether cooperative agents remain effective when facing non-cooperative or adversarial counterparts. Experiments will pair trained models with selfish baselines and random agents to measure negotiation success rates and payoff degradation under defection.
+    \par This question assesses whether cooperative agents remain effective when facing adversarial opponents. The trained model is evaluated against four adversarial opponent personas representing distinct manipulation strategies---hardball (aggressive concession refusal), deceptive (misrepresenting preferences), anchoring (extreme initial positions), and stubborn (rigid refusal to compromise).
 
     \item \textbf{RQ5: Impact on LLM Capabilities:} To what extent does promoting cooperation affect the linguistic and reasoning capabilities of the underlying LLM?
-    \par This question evaluates whether training for cooperation affects general reasoning and linguistic ability. The fine-tuned models will be tested on standard NLP benchmarks (MMLU-Pro, GLUE, IFEval, EQ-Bench) and compared to the base model to detect possible over-optimization or capability loss.
+    \par This question evaluates whether training for cooperation affects general reasoning and instruction-following ability. The fine-tuned models are tested on standard benchmarks covering academic knowledge (MMLU-Pro), instruction following (IFEval), and mathematical reasoning (GSM8K), and compared to the base model to detect possible capability loss.
 \end{enumerate}
 
 
