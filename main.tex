@@ -949,7 +949,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 
 \subsection{Robustness to Defection (RQ4)}
 
-To evaluate whether cooperative training preserves negotiation effectiveness against adversarial counterparts, the LA-GRPO fair-only model (checkpoint 1340) is tested against four adversarial opponent personas, each implemented as a system-prompt variant of the base model. The four personas represent distinct manipulation strategies documented in negotiation research:
+To evaluate whether cooperative training preserves negotiation effectiveness against adversarial counterparts, the LA-GRPO fair-only model (checkpoint 1340) is tested against four adversarial opponent personas, each implemented as a system-prompt variant of the base model. The four personas represent distinct manipulation strategies:
 
 \begin{itemize}
     \item \textbf{Hardball}: aggressive, extreme initial offers, refusing to concede.
@@ -995,8 +995,6 @@ Each persona is evaluated over 14 game configurations $\times$ 10 repetitions $=
 \paragraph{Cooperative training improves robustness against three of four adversarial strategies.} Against \textit{hardball}, the most aggressive opponent, the cooperative agent achieves the largest and most clearly significant improvement: agreement rate more than doubles ($26.4\% \to 56.4\%$, $p < 0.001$) and $U_A$ also more than doubles ($14.5 \to 30.2$, $p < 0.001$). Where the base model gets ``squeezed'' by hardball tactics, the cooperative agent recovers substantial value. Improvements against \textit{deceptive} and \textit{anchoring} opponents are also clearly positive, with significant gains in agreement rate ($+15.7$ and $+22.1$ percentage points, both $p < 0.01$) and ratio $R_{\text{coop}}$ ($p < 0.01$). The increase in $U_A$ for deceptive opponents fails to reach statistical significance ($p = 0.066$), but the direction is consistent.
 
 \paragraph{Stubborn opponents are the exception.} Against \textit{stubborn}, the cooperative agent's lower agreement rate ($-7.8$ pp) and $U_A$ ($-5.1$) are \emph{not} statistically significant ($p = 0.122$ and $p = 0.167$); both models struggle similarly, and the apparent difference falls within sampling noise. A possible explanation: the cooperative agent is more willing to accept ``no'' as a final answer rather than escalating, while the base model occasionally pushes through with another proposal that happens to land. Notably, when agreements \emph{are} reached against stubborn opponents, their quality is the highest of any cell ($\text{agreed } R_{\text{coop}} = 0.843$): the cooperative agent only closes deals that are genuinely good.
-
-\paragraph{Summary (RQ4).} Cooperative training does not produce an exploitable agent. On the contrary, against the most aggressive adversarial personas (hardball, anchoring), cooperative training substantially improves outcomes. The single weakness against stubborn opponents reflects an inability to force agreements rather than vulnerability to manipulation.
 
 
 \subsection{Language Quality and Benchmark Generalization (RQ5)}
