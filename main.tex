@@ -399,9 +399,7 @@ This chapter describes how experiments are designed to test the cooperative LA-G
 
 \subsection{Negotiation Environment (LAMEN)}
 
-The negotiation tasks are defined using the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}, which provides standardized, YAML-based multi-issue bargaining games. Each scenario specifies roles, issues, and payoff tables that determine agents' private utilities. LAMEN's modular structure allows easy configuration of integrative and mixed-motive games, essential for testing cooperation. Scenario definitions are loaded dynamically using the Hydra configuration system, which supports hierarchical experiment management and parameter overrides. The turn-taking protocol and evaluation prompts follow Franceschetti's original implementation and LAMEN's reference design, ensuring full comparability.
-
-The LAMEN framework provides a rich negotiation environment with modular scenario definitions. Games, issues, agent roles, and negotiation protocol rules are specified through YAML configuration files, which are composed using the Hydra library for dynamic experiment setup.
+The negotiation tasks are defined using the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}, which provides standardized, YAML-based multi-issue bargaining games. Each scenario specifies roles, issues, and payoff tables that determine agents' private utilities. LAMEN's modular structure allows easy configuration of integrative and mixed-motive games, essential for testing cooperation. Scenario definitions are loaded dynamically using the Hydra configuration system, which supports hierarchical experiment management and parameter overrides. The turn-taking protocol and evaluation prompts follow Franceschetti's original implementation and LAMEN's reference design, ensuring full comparability. The framework's modular design covers four configuration layers:
 
 \begin{enumerate}[label={}, leftmargin=0pt]
     \item \textbf{Games:} Each game file defines the scenario context and the set of issues and their possible outcomes.
@@ -475,12 +473,11 @@ Integrative-Distributive & All contested, but different importance weights & 24\
 \end{tabular}
 \end{table}
 
-This distribution is a deterministic consequence of the issue pool composition: each issue has a fixed payoff structure (distributive or compatible), and the archetype of a two-issue game is fully determined by the types of its constituent issues. The original issues for the rental, loan, and merger scenarios are inherited from the LAMEN framework \citep{davidson2024evaluatinglanguagemodelagency}; the joint venture and employment contract issues were designed following the same principles. While alternative issue designs could have produced a more uniform archetype distribution, the issues were deliberately designed for \textit{realism} rather than balance: in an actual employment contract, salary and equity are inherently distributive (one party's gain is the other's cost), while training budget is naturally compatible (both employer and employee benefit from skill development). Artificially adding compatible issues to equalize the distribution would have sacrificed this ecological validity. Moreover, the resulting dominance of mixture games is desirable for this work, since these are precisely the mixed-motive settings that require agents to balance competitive and cooperative behavior---the core challenge this thesis addresses. Purely compatible games are trivially solved (both agents want the same outcome), and purely distributive games were already extensively studied by \citet{franceschetti2025advantage}. \citet{davidson2024evaluatinglanguagemodelagency} similarly found that cooperative bargaining games proved to be the most challenging for LLMs, further motivating their prominence in the training set.
+This distribution is a deterministic consequence of the issue pool composition: each issue has a fixed payoff structure (distributive or compatible), and the archetype of a two-issue game is fully determined by the types of its constituent issues. Issues were designed for ecological validity rather than artificial balance---in a real employment contract, salary is inherently distributive while training budget is naturally compatible. The resulting dominance of mixture games is desirable for this work: these mixed-motive settings require agents to balance competitive and cooperative behavior, which is the core challenge this thesis addresses. \citet{davidson2024evaluatinglanguagemodelagency} similarly found that cooperative bargaining games proved to be the most challenging for LLMs, further motivating their prominence in the training set.
 
-Three game-type configurations are used during training and evaluation:
+Three game-type configurations are supported:
 \begin{itemize}
-    \item \texttt{multi-game}: All 5 scenarios (main experiment)
-    \item \texttt{cooperative-only}: Joint Venture + Employment Contract only (ablation)
+    \item \texttt{multi-game}: All 5 scenarios (used for the main experiments)
     \item \texttt{out-of-domain}: Rio Copa scenario (evaluation only)
 \end{itemize}
 
