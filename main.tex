@@ -623,7 +623,11 @@ To verify that alignment on negotiation tasks does not harm general capabilities
 
 \subsection{Training Dynamics and Convergence}
 
-Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the training dynamics for the five GRPO configurations, logged via Weights \& Biases. All curves are smoothed with a centered running average (window $= 100$ data points). GRPO runs were all capped at 600 steps; LA-GRPO runs (Figures~\ref{fig:lagrpo_training_performance} and~\ref{fig:lagrpo_training_quality}) ran longer.
+This section describes how the models behave during training. Two sets of training curves are shown---GRPO (Figures~\ref{fig:training_performance} and~\ref{fig:training_quality}) and LA-GRPO (Figures~\ref{fig:lagrpo_training_performance} and~\ref{fig:lagrpo_training_quality})---and discussed in turn. All curves are smoothed with a centered running average (window $= 100$ data points).
+
+\subsubsection{GRPO Training Dynamics}
+
+GRPO runs were all capped at 600 steps to keep compute costs manageable. Five $\lambda$ configurations were trained.
 
 \begin{figure}[H]
     \centering
@@ -639,12 +643,20 @@ Figures~\ref{fig:training_performance} and~\ref{fig:training_quality} show the t
     \label{fig:training_quality}
 \end{figure}
 
-Figures~\ref{fig:lagrpo_training_performance} and~\ref{fig:lagrpo_training_quality} show the corresponding training curves for the three LA-GRPO configurations, which ran for up to 2000 steps.
+\paragraph{Reward function shapes learning.} Under GRPO self-only, agreement rate plateaus at a lower level than under fair-only or all-equal. This is consistent with H1 (Section~\ref{sec:hypotheses}): the Nash product reward incentivizes mutually acceptable offers, while pure self-interest can produce lopsided proposals that the opponent rejects.
+
+\paragraph{Self-only fails to improve Nash product (under GRPO).} GRPO self-only's Nash ratio plateaus near the base model's level---pure self-interest provides no cooperative improvement over the untrained model. The agent extracts more for itself (higher $U_A$) but at the expense of the opponent. This pattern matches H2 (Section~\ref{sec:hypotheses}).
+
+\paragraph{Fair-only diverges more from the base model.} The KL divergence between policy and reference model is higher for GRPO fair-only (KL $0.22$--$0.62$) than for self-only (KL $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
+
+\subsubsection{LA-GRPO Training Dynamics}
+
+The three LA-GRPO configurations (self-only, fair-only, all-equal) were trained for up to 2000 steps, with fair-only stopping at step $\sim$1200.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_performance.pdf}
-    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}. Self-only continues to improve over the full training range, while fair-only (which stopped earlier) reaches high Nash and welfare ratios more quickly.}
+    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}. Self-only continues to improve over the full training range, while fair-only (whose run was terminated earlier) reaches high Nash and welfare ratios more quickly.}
     \label{fig:lagrpo_training_performance}
 \end{figure}
 
@@ -655,15 +667,9 @@ Figures~\ref{fig:lagrpo_training_performance} and~\ref{fig:lagrpo_training_quali
     \label{fig:lagrpo_training_quality}
 \end{figure}
 
-\paragraph{Key findings.}
+\paragraph{Self-only continues to improve.} Unlike GRPO self-only, which plateaus, LA-GRPO self-only shows continued improvement in $U_A$ over the full 2000 training steps. This suggests that turn-level credit assignment extracts more learning signal from the same reward, though---as the post-training evaluation in Section~\ref{sec:grpo_vs_lagrpo} will show---most of this gain is in raw $U_A$ rather than cooperative quality.
 
-\textbf{The reward function shapes learning dynamics.} Under self-only, agreement rate plateaus at a lower level than under fair-only or all-equal. This is consistent with H1 (Section~\ref{sec:hypotheses}): the Nash product reward incentivizes mutually acceptable offers, while pure self-interest can produce lopsided proposals that the opponent rejects.
-
-\textbf{Fair-only diverges more from the base model} (KL $0.22$--$0.62$ vs.\ $0.07$--$0.13$), indicating a stronger learning signal from the Nash product reward. While this is not yet in a concerning range, it warrants monitoring for potential instability. Reinforcement learning methods like PPO or GRPO are known to induce over-optimization or ``language drift'' when hyperparameters are mis-set \citep{pmlr-v235-jang24b, ouyang2022traininglanguagemodelsfollow}.
-
-\textbf{Checkpoint selection matters for LA-GRPO fair-only.} Figure~\ref{fig:lagrpo_training_quality} shows that the agreed Nash ratio for LA-GRPO fair-only rises to a peak of approximately $0.70$ around step 1000--1400, then gradually declines toward $0.66$ by step 2000. This pattern is consistent with reward hacking or mild over-optimization: after the model has converged on a cooperative strategy, continued training begins to degrade the quality of individual deals. Based on this observation, checkpoint 1340 (near the peak) was selected for the post-training evaluation of LA-GRPO fair-only, rather than the final checkpoint. For the other LA-GRPO configurations, which did not exhibit a clear decline, the last checkpoint (step 2000) was used.
-
-\paragraph{Self-only fails to improve Nash product.} Self-only's Nash ratio plateaus near the base model's level, showing that pure self-interest provides no cooperative improvement over the untrained model. The agent extracts more for itself (higher $U_A$) but at the expense of the opponent---overall deal quality measured by Nash product remains unchanged. This pattern matches H2 (Section~\ref{sec:hypotheses}).
+\paragraph{Checkpoint selection matters for LA-GRPO fair-only.} Figure~\ref{fig:lagrpo_training_quality} shows that the agreed Nash ratio for LA-GRPO fair-only rises to a peak of approximately $0.70$ around step 1000--1400, then gradually declines toward $0.66$ by step 2000. This pattern is consistent with reward hacking or mild over-optimization: after the model has converged on a cooperative strategy, continued training begins to degrade the quality of individual deals. Based on this observation, checkpoint 1340 (near the peak) was selected for the post-training evaluation of LA-GRPO fair-only, rather than the final checkpoint. For the other LA-GRPO configurations, which did not exhibit a clear decline, the last checkpoint (step 2000) was used.
 
 The following sections (5.2--5.4) present the formal post-training evaluation with statistical tests, per-archetype breakdowns, and the direct GRPO vs.\ LA-GRPO comparison.
 
