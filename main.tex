@@ -799,7 +799,7 @@ single-integrative & 0.864 & 0.715 & \textbf{0.920} & 0.872 \\
 
 \subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}\label{sec:grpo_vs_lagrpo}
 
-Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations. LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620), but each step is more token-efficient due to the shared prefix mechanism. This means the comparison reflects the methods at roughly comparable token budgets rather than matched step counts.
+Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-GRPO for the three shared $\lambda$ configurations at their respective convergence points. LA-GRPO was trained for more steps (1340--2000 vs.\ 560--620).
 
 \begin{table}[H]
 \centering
@@ -822,13 +822,11 @@ $\lambda$ \textbf{Config} & \textbf{Method} & \textbf{Steps} & \textbf{Agreement
 \end{tabular}
 \end{table}
 
-\paragraph{LA-GRPO dramatically improves self-only.} The largest effect occurs for self-only: LA-GRPO achieves $95.5\%$ agreement (vs.\ $79.8\%$ for GRPO), $U_A = 68.4$ (vs.\ $54.9$), and ratio Nash $= 0.684$ (vs.\ $0.581$). Turn-level credit assignment allows the self-interested agent to learn which specific utterances lead to deal closure, rather than attributing the entire dialogue's outcome uniformly across all tokens.
+\paragraph{LA-GRPO substantially improves self-only at convergence.} The largest effect occurs for self-only: LA-GRPO achieves $95.5\%$ agreement (vs.\ $79.8\%$ for GRPO), $U_A = 68.4$ (vs.\ $54.9$), and ratio Nash $= 0.684$ (vs.\ $0.581$). Turn-level credit assignment allows the self-interested agent to learn which specific utterances lead to deal closure, rather than attributing the entire dialogue's outcome uniformly across all tokens.
 
-\paragraph{LA-GRPO fair-only achieves the highest per-deal cooperation.} With an agreed Nash ratio of $0.787$, LA-GRPO fair-only produces the most balanced and efficient deals of any model in this study---higher than any GRPO configuration (best: $0.747$). The combination of turn-level credit assignment and Nash product reward creates a precise learning signal: the model learns not just \emph{that} cooperative deals are rewarding, but \emph{which specific turns} produce them.
+\paragraph{LA-GRPO fair-only achieves the highest per-deal cooperation.} With an agreed Nash ratio of $0.787$, LA-GRPO fair-only produces the most balanced and efficient deals of any model in this study---higher than any GRPO configuration (best: $0.747$).
 
-\paragraph{All-equal shows no clear benefit from LA-GRPO.} GRPO and LA-GRPO perform nearly identically for the blended reward ($92.7\%$ vs.\ $92.0\%$ agreement, $0.692$ vs.\ $0.680$ ratio Nash). A possible explanation is that the multi-objective reward signal is already sufficiently informative at the dialogue level, and turn-level decomposition does not add meaningful additional credit assignment for this reward configuration.
-
-\paragraph{Summary (RQ1).} LA-GRPO improves cooperative negotiation learning, but the magnitude depends on the reward function. For single-objective rewards (self-only, fair-only), turn-level credit assignment provides substantial improvements by isolating which utterances drive the outcome. For the blended reward (all-equal), the benefit is negligible---suggesting that combining multiple reward components already provides sufficient gradient diversity to learn effective negotiation strategies without turn-level decomposition.
+\paragraph{All-equal shows no clear benefit from LA-GRPO at convergence.} GRPO and LA-GRPO perform nearly identically for the blended reward ($92.7\%$ vs.\ $92.0\%$ agreement, $0.692$ vs.\ $0.680$ ratio Nash). A possible explanation is that the multi-objective reward signal is already sufficiently informative at the dialogue level, and turn-level decomposition does not add meaningful additional credit assignment for this reward configuration.
 
 \subsection{Pareto and Fairness Metrics}
 
