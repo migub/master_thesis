@@ -1094,7 +1094,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{$\lambda$ ablation across GRPO and LA-GRPO} reveals distinct roles for each reward component: the Nash product ($\lambda_{\text{fair}}$) is the strongest individual cooperative signal, self-interest ($\lambda_{\text{self}}$) alone improves payoff but not cooperation, and welfare ($\lambda_{\text{welfare}}$) alone is weak but essential in combination---refuting hypothesis H3. The combined GRPO reward (all-equal) performs best overall, nearly doubling agreement rate on the hardest archetype ($47.5\% \to 95.0\%$). At full convergence, LA-GRPO substantially improves single-objective configurations (e.g., LA-GRPO fair-only reaches the highest per-deal cooperation of any model, $0.787$ agreed Nash); at matched compute budgets, however, GRPO converges faster for single-objective rewards, while LA-GRPO retains an advantage only for the blended all-equal reward.
 
-    \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 33\% higher Nash product ($83.1$ vs.\ $62.5$).
+    \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 31\% higher Nash product ($83.1$ vs.\ $63.4$).
 
     \item \textbf{Extended LAMEN environment} with 5 scenarios, 19 issues, and 47 game configurations (vs.\ Franceschetti's 3/10/23), including new Joint Venture and Employment Contract scenarios with integrative issue structures.
 \end{enumerate}
@@ -1106,11 +1106,11 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{Frozen opponent:} All training uses a frozen local opponent that never adapts. This creates a ceiling on measurable cooperative effects---the opponent's strategy is fixed regardless of the agent's behavior.
 
-    \item \textbf{Unmatched step counts between GRPO and LA-GRPO:} LA-GRPO was trained for 1340--2000 steps compared to 560--620 for GRPO. While LA-GRPO is more token-efficient per step (shared prefix), the total token budgets were not precisely matched, preventing a perfectly controlled comparison.
+    \item \textbf{Unmatched step counts between GRPO and LA-GRPO:} LA-GRPO was trained for 1340--2000 steps compared to 560--620 for GRPO. While LA-GRPO uses fewer tokens per step (shared prefix), the total token budgets were not precisely matched. Section~\ref{sec:matched_budget} attempts to address this with an out-of-sample matched-budget comparison, but a definitive resolution would require running both methods to convergence at multiple matched checkpoints, which exceeded the available training budget.
 
     \item \textbf{Trust Game structural limitations:} The base model investor sends exactly 5 with zero variance, creating a low ceiling for measurable effects. The Trust Game's asymmetric structure (trustee cannot increase total value) does not fully test cooperative capacity.
 
-    \item \textbf{Limited benchmark coverage:} Only three benchmarks (MMLU-Pro, IFEval, GSM8K) were evaluated for capability preservation. Additional benchmarks such as EQ-Bench (emotional intelligence), LM-Pragmatics (non-literal language), and GLUE (general language understanding) could reveal more subtle effects of cooperative training, particularly on pragmatic or social reasoning tasks.
+    \item \textbf{Limited benchmark coverage:} Only three benchmarks (MMLU-Pro, IFEval, GSM8K) were evaluated for capability preservation. Additional benchmarks measuring social, pragmatic, or emotional reasoning could reveal more subtle effects of cooperative training that are not captured by reasoning or instruction-following alone.
 
     \item \textbf{Dialogue quality:} Qualitatively, the generated negotiations are often short and formulaic, with agents frequently repeating the same question (``What do you think?'') at the end of each turn (see the example in Appendix~\ref{app:example_dialogue}). While the quantitative negotiation outcomes are meaningful, the dialogues lack the richness of human negotiation---few genuine justifications, rare information exchange about underlying interests, and little strategic variation across games. This likely reflects the modest reasoning capacity of the 14B base model combined with LoRA's limited parameter updates.
 \end{itemize}
