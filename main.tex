@@ -713,8 +713,6 @@ Self-Fair-Equal & 1/0/1 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scrip
 
 \paragraph{Dropping welfare hurts.} Self-fair-equal ($\lambda_{\text{self}} = 1.0$, $\lambda_{\text{fair}} = 1.0$, no welfare) underperforms all-equal significantly on agreement rate ($p < 0.001$) and ratio welfare ($p < 0.01$), despite training for more steps (820 vs.\ 620). This suggests the welfare component provides a useful complementary signal, contrary to the earlier hypothesis H3 that welfare would be redundant. A possible explanation is that welfare helps in integrative games where total value varies, providing gradient signal that Nash product alone does not capture in those settings.
 
-\paragraph{All-equal dominates on the hardest archetype.} Table~\ref{tab:arch_agreement} shows agreement rate by archetype. The integrative-distributive archetype---where trade-offs exist but there are no free wins---is the most challenging: the base model achieves only 47.5\% agreement. All-equal nearly doubles this to 95.0\%, demonstrating that the combined reward signal is most effective precisely where cooperative behavior is hardest to learn.
-
 \begin{table}[H]
 \centering
 \caption{GRPO agreement rate (\%) by archetype across models. Bold indicates best per row.}
@@ -734,6 +732,8 @@ integrative distributive & 47.5 & 70.0 & 75.0 & 71.3 & \textbf{95.0} & 72.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{All-equal dominates on the hardest archetype.} Table~\ref{tab:arch_agreement} shows agreement rate by archetype. The integrative-distributive archetype---where trade-offs exist but there are no free wins---is the most challenging: the base model achieves only 47.5\% agreement. All-equal nearly doubles this to 95.0\%, demonstrating that the combined reward signal is most effective precisely where cooperative behavior is hardest to learn.
 
 
 \subsection{LA-GRPO Negotiation Performance}
