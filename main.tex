@@ -486,7 +486,7 @@ During the initialization of a scenario, a random game with random issues from a
 
 \subsection{Agent Roles and Initialization}
 
-Two symmetric instances of the same model are assigned roles with distinct names, professions, ages, and personality types. Each agent has access only to its own private payoff table. The system prompt explicitly forbids revealing payoff information to the opponent. (Known issue: the model occasionally leaks payoff values early in training; this behavior diminishes as training progresses.)
+Two symmetric instances of the same model are assigned roles with distinct names, professions, ages, and personality types. Each agent has access only to its own private payoff table. The system prompt explicitly forbids revealing payoff information to the opponent.
 
 At the start of each episode, the initial prompt $s_0$ is constructed by inserting the scenario description, role information, and payoff tables of the sampled issues. The model then conducts a full negotiation consisting of five rounds per agent ($N=5$), alternating roles across episodes to avoid first-mover bias. During LA-GRPO training, the turn $h$ at which the dialogue diverges into multiple continuations is drawn from a geometric distribution $h \sim \mathrm{Geom}(0.3)$, prioritizing early turns where strategic anchors typically emerge \citep{franceschetti2025advantage}.
 
@@ -495,11 +495,11 @@ To provide an intuitive illustration of the negotiation setup, Appendix~\ref{app
 
 \subsection{Training Configurations ($\lambda$ Ablation)}
 
-Five $\lambda$ configurations are trained with GRPO to explore the effect of each reward component. Based on these results, the three most informative configurations are retrained with LA-GRPO. Welfare-only and self-fair-equal are omitted from LA-GRPO training, as the GRPO ablation showed that welfare alone provides a weak signal and that removing the welfare component hurts performance. This also reduces compute costs, since LA-GRPO requires more training steps per run (though fewer tokens per step due to the shared prefix mechanism).
+Five $\lambda$ configurations are trained with GRPO to explore the effect of each reward component. Three of these---self-only, fair-only, and all-equal---are retrained with LA-GRPO. The remaining two (welfare-only and self-fair-equal) are omitted from LA-GRPO training to reduce compute costs, since LA-GRPO requires more steps per run.
 
 \begin{table}[H]
 \centering
-\caption{$\lambda$ configurations and training methods. LA-GRPO trains for more steps but consumes fewer tokens per step than GRPO, as the shared dialogue prefix is generated only once per training step.}
+\caption{$\lambda$ configurations and training methods. LA-GRPO trains for more steps but uses fewer tokens per step (shared dialogue prefix generated once per group).}
 \label{tab:lambda_configs}
 \begin{tabular}{lccclcc}
 \toprule
