@@ -778,21 +778,21 @@ All-Equal & 0.653 & 0.931 & 0.740 \\
 
 \begin{table}[H]
 \centering
-\caption{LA-GRPO agreed-only Nash ratio by archetype. Bold indicates best per row.}
+\caption{LA-GRPO agreed-only Nash ratio by archetype. Bold indicates best per row. The LA-GRPO evaluation uses a reduced game suite covering three core archetypes (200 games total per model).}
 \label{tab:lagrpo_arch_nash}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Archetype} & \textbf{Base} & \textbf{Self-Only} & \textbf{Fair-Only} & \textbf{All-Equal} \\
 \midrule
-Distributive & \textbf{0.723} & 0.633 & 0.680 & 0.676 \\
-Compatible & 0.670 & 0.793 & \textbf{0.802} & 0.735 \\
-Integrative & 0.766 & 0.715 & \textbf{0.920} & 0.872 \\
+single-compatible & 0.670 & 0.793 & \textbf{0.802} & 0.735 \\
+single-distributive & \textbf{0.723} & 0.633 & 0.680 & 0.676 \\
+single-integrative & 0.864 & 0.715 & \textbf{0.920} & 0.872 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Fair-only excels on compatible and integrative games.} Table~\ref{tab:lagrpo_arch_nash} shows agreed-only Nash ratios by archetype. Fair-only achieves the highest Nash ratios on compatible ($0.802$) and integrative games ($0.920$), with a particularly striking advantage on integrative ($0.920$ vs.\ $0.715$ for self-only and $0.776$ for base). On distributive games, however, the base model retains the highest Nash ratio ($0.723$); the LA-GRPO models are slightly more aggressive here, trading some balance for higher individual payoff (see following paragraph). Overall, the results indicate that the Nash product reward is particularly effective on integrative games when training is run to convergence.
+\paragraph{Fair-only excels on compatible and integrative games.} Table~\ref{tab:lagrpo_arch_nash} shows agreed-only Nash ratios by archetype. Fair-only achieves the highest Nash ratios on single-compatible ($0.802$) and single-integrative games ($0.920$), with a particularly striking advantage on single-integrative ($0.920$ vs.\ $0.715$ for self-only). On single-distributive games, however, the base model retains the highest Nash ratio ($0.723$); the LA-GRPO models trade some balance for higher individual payoff here (see following paragraph). Overall, the results indicate that the Nash product reward is particularly effective on integrative games when training is run to convergence.
 
 \paragraph{Self-only negotiates aggressively.} The mean payoffs $(U_A / U_B)$ confirm that self-only splits outcomes in its own favor: $56.0/44.0$ on distributive games and $65.8/46.1$ on integrative games. Fair-only produces more symmetric payoffs ($54.4/45.6$ on distributive and $55.9/60.5$ on integrative), and all-equal even concedes a slight advantage to the opponent on distributive games ($47.6/52.4$).
 
