@@ -555,7 +555,7 @@ Seed & 42 \\
 \paragraph{Infrastructure and GPU Migration.}
 \citet{franceschetti2025advantage}'s original training pipeline required four GPUs: two NVIDIA A100s running vLLM inference servers (one for the policy model $\pi_\theta$ and one for the frozen opponent $\pi_c$) and two additional A100s for gradient computation. This setup enabled batched dialogue generation via vLLM's paged attention mechanism \citep{kwon2023efficientmemorymanagementlarge}, significantly accelerating the sampling of multiple continuations per training step.
 
-Due to cost constraints, this work rewrites the training pipeline to operate on a \textbf{single GPU}. Training is performed on a rented NVIDIA A100 (80\,GB), which provides sufficient memory for the model, LoRA adapters, optimizer states, and the long KV caches produced by multi-turn dialogues. Evaluation and smaller experiments are run on a local NVIDIA RTX~5090 (32\,GB), which is adequate for inference but lacks the memory headroom required for stable gradient accumulation during training. Both the policy model and the frozen opponent run on the same device, with LoRA adapters enabled or disabled to switch between the two roles. This eliminates the need for inter-GPU communication and multi-server orchestration, substantially reducing infrastructure complexity and cost. The trade-off is the loss of vLLM: since a single GPU cannot simultaneously host a vLLM inference server and perform gradient updates, dialogue generation falls back to sequential \texttt{model.generate()} calls. Each training step requires approximately 80 forward passes ($G = 8$ continuations $\times$ up to 10 dialogue turns), resulting in step times of 100--150 seconds. While a vLLM colocate mode was planned to recover batched generation on a single GPU, it was not implemented within the scope of this thesis due to a technical incompatibility: TRL's vLLM colocate mode requires vLLM to manage model loading, which conflicts with the BitsAndBytes 4-bit quantization pipeline used for training---the two model loading approaches cannot coexist on a single GPU.
+Due to cost constraints, this work rewrites the training pipeline to operate on a \textbf{single GPU}. Training is performed on a rented NVIDIA A100 (80\,GB), which provides sufficient memory for the model, LoRA adapters, optimizer states, and the long KV caches produced by multi-turn dialogues. Evaluation and smaller experiments are run on a rented NVIDIA RTX~5090 (32\,GB), which is adequate for inference but lacks the memory headroom required for stable gradient accumulation during training. Both the policy model and the frozen opponent run on the same device, with LoRA adapters enabled or disabled to switch between the two roles. This eliminates the need for inter-GPU communication and multi-server orchestration, substantially reducing infrastructure complexity and cost. The trade-off is the loss of vLLM: since a single GPU cannot simultaneously host a vLLM inference server and perform gradient updates, dialogue generation falls back to sequential \texttt{model.generate()} calls. Each training step requires approximately 80 forward passes ($G = 8$ continuations $\times$ up to 10 dialogue turns), resulting in step times of 100--150 seconds. While a vLLM colocate mode was planned to recover batched generation on a single GPU, it was not implemented within the scope of this thesis due to a technical incompatibility: TRL's vLLM colocate mode requires vLLM to manage model loading, which conflicts with the BitsAndBytes 4-bit quantization pipeline used for training---the two model loading approaches cannot coexist on a single GPU.
 
 \paragraph{Model and Quantization.}
 To fit Qwen3-14B on a single GPU, BitsAndBytes 4-bit quantization is applied (nf4 data type, double quantization, bf16 compute dtype). This reduces the model's memory footprint from $\sim$28\,GB (fp16) to $\sim$9\,GB, leaving sufficient headroom for LoRA adapters, optimizer states, and KV cache during generation.
@@ -582,7 +582,7 @@ Each trained model is evaluated by playing selfplay negotiations against the fro
 
 Generation uses temperature $= 1.0$ with a maximum of 200 tokens per turn and 5 negotiation rounds per agent. The same generation parameters are applied to all models to ensure a fair comparison.
 
-A negotiation is classified as \textit{agreed} if either agent receives a positive payoff ($U_A > 0$ or $U_B > 0$). This includes partial agreements where agents agree on some but not all issues---a known limitation, as partial agreements can produce positive rewards for incomplete deals, slightly inflating agreement rates.
+A negotiation is classified as \textit{agreed} if either agent receives a positive payoff ($U_A > 0$ or $U_B > 0$).
 
 Since negotiation payoffs are not normally distributed (failed negotiations produce zeros, creating a bimodal distribution), non-parametric statistical tests are used throughout:
 
@@ -599,12 +599,12 @@ To test generalization, the Trust Game is used as an out-of-domain evaluation---
     \item \textbf{Rules:} Investor sends $x \in [0, 10]$ points (tripled to $3x$). Trustee returns $y \in [0, 3x]$.
     \item \textbf{Nash equilibrium:} send $= 0$ (selfish rational). \textbf{Pareto optimum:} send $= 10$, return $= 15$.
     \item \textbf{Conditions:} \texttt{vs\_base} (trained model vs.\ frozen base) and \texttt{vs\_self} (selfplay).
-    \item 50 games per condition, temperature $= 1.0$, seed $= 42$.
+    \item 50 games per condition for GRPO, 300 for LA-GRPO, temperature $= 1.0$, seed $= 42$.
 \end{itemize}
 
 \subsubsection{Language and Generalization Tests}
 
-To verify that alignment on negotiation tasks does not harm general capabilities, the best-performing GRPO and LA-GRPO models (both all-equal) are re-evaluated on three standard benchmarks using the Language Model Evaluation Harness \citep{eval-harness} with a vLLM backend:
+To verify that alignment on negotiation tasks does not harm general capabilities, the GRPO and LA-GRPO all-equal models are re-evaluated on three standard benchmarks using the Language Model Evaluation Harness \citep{eval-harness} with a vLLM backend:
 
 \begin{itemize}
     \item \textbf{MMLU-Pro} \citep{wang2024mmluprorobustchallengingmultitask}: 5-shot multiple-choice evaluation across 14 academic subjects (12{,}000+ questions with 10 answer options). Tests factual knowledge and reasoning.
