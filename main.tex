@@ -510,7 +510,7 @@ Self-Only & 1.0 & 0.0 & 0.0 & GRPO + LA-GRPO & 560 / 2000 \\
 Fair-Only & 0.0 & 0.0 & 1.0 & GRPO + LA-GRPO & 560 / 1340 \\
 Welfare-Only & 0.0 & 1.0 & 0.0 & GRPO only & 560 \\
 All-Equal & 1.0 & 1.0 & 1.0 & GRPO + LA-GRPO & 620 / 2000 \\
-Self-Fair-Equal & 0.5 & 0.0 & 0.5 & GRPO only & 820 \\
+Self-Fair-Equal & 1.0 & 0.0 & 1.0 & GRPO only & 820 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -686,7 +686,7 @@ Self-Only & 1/0/0 & 79.8\% & 54.9 \scriptsize{[52.0, 57.7]} & 0.723 \scriptsize{
 Fair-Only & 0/0/1 & 89.6\% & 55.0 \scriptsize{[52.4, 57.6]} & 0.808 \scriptsize{[0.782, 0.833]} & 0.664 \scriptsize{[0.637, 0.689]} \\
 Welfare-Only & 0/1/0 & 85.9\% & 57.5 \scriptsize{[54.8, 60.0]} & 0.778 \scriptsize{[0.751, 0.805]} & 0.641 \scriptsize{[0.615, 0.668]} \\
 \textbf{All-Equal} & \textbf{1/1/1} & \textbf{92.7\%} & \textbf{60.3} \scriptsize{[58.0, 62.6]} & \textbf{0.840} \scriptsize{[0.819, 0.861]} & \textbf{0.692} \scriptsize{[0.669, 0.716]} \\
-Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scriptsize{[0.727, 0.786]} & 0.625 \scriptsize{[0.596, 0.653]} \\
+Self-Fair-Equal & 1/0/1 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scriptsize{[0.727, 0.786]} & 0.625 \scriptsize{[0.596, 0.653]} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -701,7 +701,7 @@ Self-Fair-Equal & 0.5/0/0.5 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \s
 
 \paragraph{Welfare-only sits between self- and fair-only.} Welfare-only ($\lambda_{\text{welfare}} = 1.0$) achieves agreement rate 85.9\% and ratio Nash 0.641---above self-only but below fair-only. It produces high agent payoff ($U_A = 57.5$, second only to all-equal) because the welfare term $U_A + U_B$ directly rewards the agent's own contribution to total value. However, it lags fair-only on ratio Nash, confirming that explicitly rewarding balance (Nash product) produces more equitable outcomes than simply rewarding total value.
 
-\paragraph{Dropping welfare hurts.} Self-fair-equal ($\lambda_{\text{self}} = 0.5$, $\lambda_{\text{fair}} = 0.5$, no welfare) underperforms all-equal significantly on agreement rate ($p < 0.001$) and ratio welfare ($p < 0.01$), despite training for more steps (820 vs.\ 620). This suggests the welfare component provides a useful complementary signal, contrary to the earlier hypothesis H3 that welfare would be redundant. A possible explanation is that welfare helps in integrative games where total value varies, providing gradient signal that Nash product alone does not capture in those settings.
+\paragraph{Dropping welfare hurts.} Self-fair-equal ($\lambda_{\text{self}} = 1.0$, $\lambda_{\text{fair}} = 1.0$, no welfare) underperforms all-equal significantly on agreement rate ($p < 0.001$) and ratio welfare ($p < 0.01$), despite training for more steps (820 vs.\ 620). This suggests the welfare component provides a useful complementary signal, contrary to the earlier hypothesis H3 that welfare would be redundant. A possible explanation is that welfare helps in integrative games where total value varies, providing gradient signal that Nash product alone does not capture in those settings.
 
 \paragraph{All-equal dominates on the hardest archetype.} Table~\ref{tab:arch_agreement} shows agreement rate by archetype. The integrative-distributive archetype---where trade-offs exist but there are no free wins---is the most challenging: the base model achieves only 47.5\% agreement. All-equal nearly doubles this to 95.0\%, demonstrating that the combined reward signal is most effective precisely where cooperative behavior is hardest to learn.
 
