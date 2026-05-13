@@ -632,16 +632,18 @@ GRPO runs were all capped at 600 steps to keep compute costs manageable. Five $\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
-    \caption{GRPO negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a centered running average (window $= 100$ data points). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio. Fair-only and all-equal show the strongest cooperative improvements, while self-only improves $U_A$ but not cooperative metrics. Welfare-only performs similarly to self-only on most metrics.}
+    \caption{GRPO negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a centered running average (window $= 100$ data points). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio.}
     \label{fig:training_performance}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_quality.pdf}
-    \caption{GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio. Self-only achieves the highest individual payoff on agreed deals, while fair-only leads on balanced outcomes. Welfare-only shows declining Nash ratio after step $\sim$400, suggesting over-optimization toward total value at the expense of balanced deals.}
+    \caption{GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio.}
     \label{fig:training_quality}
 \end{figure}
+
+\paragraph{Overview of GRPO training.} Across the five configurations, fair-only and all-equal show the strongest improvements on cooperative metrics (agreement rate, Nash ratio, welfare ratio), while self-only improves $U_A$ but not cooperative outcomes. Welfare-only performs similarly to self-only on most metrics. Looking at deal quality (Figure~\ref{fig:training_quality}), self-only achieves the highest individual payoff on agreed deals, while fair-only produces the most balanced outcomes. Welfare-only shows a declining Nash ratio after step $\sim$400, suggesting over-optimization toward total value at the expense of balanced deals.
 
 \paragraph{Reward function shapes learning.} Under GRPO self-only, agreement rate plateaus at a lower level than under fair-only or all-equal. This is consistent with H1 (Section~\ref{sec:hypotheses}): the Nash product reward incentivizes mutually acceptable offers, while pure self-interest can produce lopsided proposals that the opponent rejects.
 
@@ -656,16 +658,18 @@ The three LA-GRPO configurations (self-only, fair-only, all-equal) were trained 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_performance.pdf}
-    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}. Self-only continues to improve over the full training range, while fair-only reaches high Nash and welfare ratios more quickly.}
+    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}.}
     \label{fig:lagrpo_training_performance}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_quality.pdf}
-    \caption{LA-GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$. Right: agreed Nash ratio. Self-only's agreed $U_A$ rises sharply, indicating increasingly aggressive value extraction, while its agreed Nash ratio remains flat. Fair-only reaches the highest agreed Nash ratio ($\sim 0.70$) around step 1000--1400 before slowly declining, suggesting the onset of over-optimization; the evaluated checkpoint (1340) was selected near this peak.}
+    \caption{LA-GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$. Right: agreed Nash ratio.}
     \label{fig:lagrpo_training_quality}
 \end{figure}
+
+\paragraph{Overview of LA-GRPO training.} Self-only's agreed $U_A$ rises sharply, indicating increasingly aggressive value extraction, while its agreed Nash ratio remains flat. Fair-only reaches the highest agreed Nash ratio ($\sim 0.70$) around step 1000--1400 before slowly declining---a pattern that influenced checkpoint selection (discussed below).
 
 \paragraph{Self-only continues to improve.} Unlike GRPO self-only, which plateaus, LA-GRPO self-only shows continued improvement in $U_A$ over the full 2000 training steps. This suggests that turn-level credit assignment extracts more learning signal from the same reward, though---as the post-training evaluation in Section~\ref{sec:grpo_vs_lagrpo} will show---most of this gain is in raw $U_A$ rather than cooperative quality.
 
