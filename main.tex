@@ -705,9 +705,7 @@ Self-Fair-Equal & 1/0/1 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scrip
 
 \paragraph{All-equal is the best overall GRPO model.} The model trained with $\lambda_{\text{self}} = \lambda_{\text{welfare}} = \lambda_{\text{fair}} = 1.0$ achieves the highest scores on every metric: $U_A = 60.3$ ($+21\%$ over baseline), agreement rate $= 92.7\%$ ($+14.1$ percentage points), and ratio Nash $= 0.692$ ($+18\%$). The difference over fair-only on $U_A$ is statistically significant ($p = 0.006$).
 
-\paragraph{Self-interest alone is insufficient.} Self-only ($\lambda_{\text{self}} = 1.0$) improves $U_A$ marginally but does \emph{not} improve agreement rate, ratio Nash, or ratio welfare significantly over baseline. The cooperative reward signals (welfare, fairness) are what drive meaningful improvement in negotiation quality.
-
-\paragraph{Fairness is a strong individual signal.} Fair-only significantly outperforms self-only on agreement rate ($p < 0.001$), ratio Nash ($p < 0.001$), and ratio welfare ($p < 0.01$). This confirms that fairness-based rewards are more effective than pure self-interest for learning cooperative negotiation.
+\paragraph{Fairness drives cooperation, self-interest does not.} Self-only ($\lambda_{\text{self}} = 1.0$) improves $U_A$ marginally but does \emph{not} improve agreement rate, ratio Nash, or ratio welfare significantly over the baseline. Fair-only, in contrast, significantly outperforms self-only on agreement rate ($p < 0.001$), ratio Nash ($p < 0.001$), and ratio welfare ($p < 0.01$). The cooperative reward signals (welfare, fairness) are what drive meaningful improvement in negotiation quality.
 
 \paragraph{Welfare-only sits between self- and fair-only.} Welfare-only ($\lambda_{\text{welfare}} = 1.0$) achieves agreement rate 85.9\% and ratio Nash 0.641---above self-only but below fair-only. It produces high agent payoff ($U_A = 57.5$, second only to all-equal) because the welfare term $U_A + U_B$ directly rewards the agent's own contribution to total value. However, it lags fair-only on ratio Nash, confirming that explicitly rewarding balance (Nash product) produces more equitable outcomes than simply rewarding total value.
 
@@ -738,7 +736,7 @@ integrative distributive & 47.5 & 70.0 & 75.0 & 71.3 & \textbf{95.0} & 72.5 \\
 
 \subsection{LA-GRPO Negotiation Performance}
 
-To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves cooperative negotiation learning, three LA-GRPO models are trained with the same $\lambda$ configurations used for GRPO: self-only, fair-only, and all-equal. For these three shared configurations, LA-GRPO trains for more steps (1340--2000) than GRPO (560--620), but each step consumes significantly fewer tokens: the shared dialogue prefix up to turn $h$ is generated only once, and only the $G$ continuations from turn $h$ onward require new forward passes. The same evaluation protocol (560 games, 20 repetitions, 7 archetypes) is applied.
+To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves cooperative negotiation learning, three LA-GRPO models are trained with the same $\lambda$ configurations used for GRPO: self-only, fair-only, and all-equal. For these three shared configurations, LA-GRPO trains for more steps (1340--2000) than GRPO (560--620). The same evaluation protocol (560 games, 20 repetitions, 7 archetypes) is applied.
 
 \begin{table}[H]
 \centering
@@ -792,9 +790,9 @@ Integrative & 0.715 & \textbf{0.920} & 0.872 \\
 \end{tabular}
 \end{table}
 
-\paragraph{Fair-only wins Nash product on every archetype.} Table~\ref{tab:lagrpo_arch_nash} shows agreed-only Nash ratios by archetype. Fair-only dominates across all game types, with a particularly striking advantage on integrative games ($0.920$ vs.\ $0.715$ for self-only). This is the strongest evidence for the effectiveness of cooperative reward shaping: when the Nash product is the training objective, the model learns to find balanced, mutually beneficial deals regardless of the game structure.
+\paragraph{Fair-only wins Nash product on every archetype.} Table~\ref{tab:lagrpo_arch_nash} shows agreed-only Nash ratios by archetype. Fair-only dominates across all game types, with a particularly striking advantage on integrative games ($0.920$ vs.\ $0.715$ for self-only). This indicates that the Nash product reward is particularly effective on integrative games when training is run to convergence.
 
-\paragraph{Self-only negotiates aggressively.} The payoff balance $U_A / U_B$ confirms that self-only splits outcomes in its own favor: 56.0/44.0 on distributive games and 65.8/46.1 on integrative games. Fair-only produces more symmetric splits (54.4/45.6 and 55.9/60.5), and all-equal even concedes a slight advantage to the opponent on distributive games (47.6/52.4).
+\paragraph{Self-only negotiates aggressively.} The mean payoffs $(U_A / U_B)$ confirm that self-only splits outcomes in its own favor: $56.0/44.0$ on distributive games and $65.8/46.1$ on integrative games. Fair-only produces more symmetric payoffs ($54.4/45.6$ on distributive and $55.9/60.5$ on integrative), and all-equal even concedes a slight advantage to the opponent on distributive games ($47.6/52.4$).
 
 
 \subsection{GRPO vs.\ LA-GRPO Comparison (RQ1)}\label{sec:grpo_vs_lagrpo}
