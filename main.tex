@@ -651,12 +651,12 @@ GRPO runs were all capped at 600 steps to keep compute costs manageable. Five $\
 
 \subsubsection{LA-GRPO Training Dynamics}
 
-The three LA-GRPO configurations (self-only, fair-only, all-equal) were trained for up to 2000 steps, with fair-only stopping at step $\sim$1200.
+The three LA-GRPO configurations (self-only, fair-only, all-equal) were trained for up to 2000 steps.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_performance.pdf}
-    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}. Self-only continues to improve over the full training range, while fair-only (whose run was terminated earlier) reaches high Nash and welfare ratios more quickly.}
+    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}. Self-only continues to improve over the full training range, while fair-only reaches high Nash and welfare ratios more quickly.}
     \label{fig:lagrpo_training_performance}
 \end{figure}
 
