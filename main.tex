@@ -704,7 +704,7 @@ To verify that alignment on negotiation tasks does not harm general capabilities
 \section{Results and Discussion}
 \label{sec:results}
 
-\subsection{Training Dynamics and Convergence}
+\subsection{Training Dynamics and Convergence}\label{sec:training_dynamics}
 
 This section describes how the models behave during training. Two sets of training curves are shown---GRPO (Figures~\ref{fig:training_performance} and~\ref{fig:training_quality}) and LA-GRPO (Figures~\ref{fig:lagrpo_training_performance} and~\ref{fig:lagrpo_training_quality})---and discussed in turn. All curves are smoothed with a centered running average (window $= 100$ data points).
 
@@ -1523,6 +1523,46 @@ received.
 \end{quote}
 
 The explicit output format constraints (\texttt{I send X points} / \texttt{I return X points}) are required for reliable numeric extraction from the model's free-form text response. Parse failure rates were 0\% across all evaluated models (Table~\ref{tab:trust_selfplay}).
+
+
+\section{Code and Reproducibility}
+\label{app:code}
+
+The complete codebase used for this thesis is publicly available at:
+\begin{center}
+\url{https://github.com/migub/multiturn-llm-training}
+\end{center}
+
+The repository is a fork of \citet{franceschetti2025advantage}'s original LA-GRPO codebase, extended for cooperative negotiation as described in Section~\ref{sec:methodology}. This appendix documents the key files that constitute the methodological contribution of this thesis and provides pointers for reproducing the experiments.
+
+\paragraph{Repository structure.}
+\begin{itemize}
+    \item \texttt{multiturn\_llm\_training/grpo/} --- GRPO and LA-GRPO training code.
+    \item \texttt{multiturn\_llm\_training/DPO/}, \texttt{multiturn\_llm\_training/REFUEL/} --- inherited from upstream, not used in this thesis.
+    \item \texttt{envs/negotiation/} --- LAMEN-based negotiation environment, reward computation, game configurations, and per-game maximum metric computation.
+    \item \texttt{evaluations/} --- post-training evaluation scripts and result JSON files for negotiation, Trust Game, robustness, and benchmarks.
+    \item \texttt{configs/} --- Hydra YAML configurations for scenarios, agents, and training runs.
+\end{itemize}
+
+\paragraph{Key files.}
+
+\begin{itemize}
+    \item \texttt{multiturn\_llm\_training/grpo/grpo\_single\_gpu.py} (203 lines) --- entry point for GRPO training on a single GPU. Handles argument parsing, model loading with 4-bit quantization (\texttt{BitsAndBytesConfig}, nf4), LoRA adapter configuration, and instantiation of the trainer. This file was rewritten from the original multi-GPU pipeline to operate on a single rented A100 or RTX 5090.
+
+    \item \texttt{multiturn\_llm\_training/grpo/multiturn\_grpo\_trainer.py} (789 lines) --- the core training loop. Implements multi-turn negotiation rollouts, the cooperative reward computation (Section~\ref{sec:cooperative_reward}), the group-relative advantage update, KL regularization against the reference model, and Weights \& Biases logging. The trainer is structurally based on Franceschetti's \texttt{LAGRPOTrainer} but adapted to use standard HuggingFace + BitsAndBytes + PEFT (no Unsloth dependency) to ensure compatibility with the cooperative reward signal and the larger Qwen3-14B base model.
+
+    \item \texttt{envs/negotiation/env.py} --- contains the \texttt{compute\_max\_metrics()} function, which brute-forces the per-game maximum of each reward component across all $\leq 121$ outcome combinations for normalization (Section~\ref{sec:cooperative_reward}).
+\end{itemize}
+
+\paragraph{Training and evaluation logs.}
+All training runs are publicly available as Weights \& Biases reports:
+\begin{itemize}
+    \item \textbf{GRPO runs}: \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/ig05od0g}
+    \item \textbf{LA-GRPO runs}: \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/dlwxgofj}
+\end{itemize}
+
+These reports include all metrics shown in the training-dynamics figures (Section~\ref{sec:training_dynamics}), the hyperparameter configurations, and additional run-level metadata not included in the main text.
+
 
 \section{Declaration of Authorship}
 \label{app:declaration}
