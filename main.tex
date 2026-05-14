@@ -582,7 +582,7 @@ Five $\lambda$ configurations are trained with GRPO to explore the effect of eac
 
 \begin{table}[H]
 \centering
-\caption{$\lambda$ configurations and training methods. LA-GRPO trains for more steps but uses fewer tokens per step (shared dialogue prefix generated once per group).}
+\caption[$\lambda$ configurations and training methods.]{$\lambda$ configurations and training methods. LA-GRPO trains for more steps but uses fewer tokens per step (shared dialogue prefix generated once per group).}
 \label{tab:lambda_configs}
 \begin{tabular}{lccclcc}
 \toprule
@@ -715,14 +715,14 @@ GRPO runs were all capped at 600 steps to keep compute costs manageable. Five $\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_performance.pdf}
-    \caption{GRPO negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a centered running average (window $= 100$ data points). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio.}
+    \caption[GRPO negotiation performance during training.]{GRPO negotiation performance during training across five $\lambda$ configurations. All curves are smoothed with a centered running average (window $= 100$ data points). Shaded regions indicate variance. Top left: mean agent payoff $U_A$. Top right: agreement rate. Bottom left: normalized Nash ratio. Bottom right: normalized welfare ratio.}
     \label{fig:training_performance}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/training_curves_quality.pdf}
-    \caption{GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio.}
+    \caption[GRPO deal quality during training.]{GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$ (excluding failed negotiations). Right: agreed Nash ratio.}
     \label{fig:training_quality}
 \end{figure}
 
@@ -741,14 +741,14 @@ The three LA-GRPO configurations (self-only, fair-only, all-equal) were trained 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_performance.pdf}
-    \caption{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}.}
+    \caption[LA-GRPO negotiation performance during training.]{LA-GRPO negotiation performance during training across three $\lambda$ configurations (up to 2000 steps). Same smoothing and layout as Figure~\ref{fig:training_performance}.}
     \label{fig:lagrpo_training_performance}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/lagrpo_training_curves_quality.pdf}
-    \caption{LA-GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$. Right: agreed Nash ratio.}
+    \caption[LA-GRPO deal quality during training.]{LA-GRPO deal quality during training, computed only over successful negotiations. Left: agreed $U_A$. Right: agreed Nash ratio.}
     \label{fig:lagrpo_training_quality}
 \end{figure}
 
@@ -767,7 +767,7 @@ Table~\ref{tab:eval_results} presents the main evaluation results across all GRP
 
 \begin{table}[H]
 \centering
-\caption{GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column. 95\% bootstrap confidence intervals in brackets.}
+\caption[GRPO negotiation evaluation results.]{GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column. 95\% bootstrap confidence intervals in brackets.}
 \label{tab:eval_results}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lccccc}
@@ -796,7 +796,7 @@ Self-Fair-Equal & 1/0/1 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scrip
 
 \begin{table}[H]
 \centering
-\caption{GRPO agreement rate (\%) by archetype across models. Bold indicates best per row.}
+\caption[GRPO agreement rate (\%) by archetype across models.]{GRPO agreement rate (\%) by archetype across models. Bold indicates best per row.}
 \label{tab:arch_agreement}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccccc}
@@ -823,7 +823,7 @@ To evaluate whether turn-level credit assignment (\textbf{RQ1}) improves coopera
 
 \begin{table}[H]
 \centering
-\caption{LA-GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column.}
+\caption[LA-GRPO negotiation evaluation results.]{LA-GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column.}
 \label{tab:lagrpo_eval_results}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccccc}
@@ -842,7 +842,7 @@ All-Equal & 1/1/1 & 2000 & 92.0\% & 60.1 & 0.857 & 0.680 \\
 
 \begin{table}[H]
 \centering
-\caption{LA-GRPO agreed-only metrics (quality of successful negotiations). Bold indicates best per column.}
+\caption[LA-GRPO agreed-only metrics (quality of successful negotiations).]{LA-GRPO agreed-only metrics (quality of successful negotiations). Bold indicates best per column.}
 \label{tab:lagrpo_agreed}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccc}
@@ -861,7 +861,7 @@ All-Equal & 0.653 & 0.931 & 0.740 \\
 
 \begin{table}[H]
 \centering
-\caption{LA-GRPO agreed-only Nash ratio by archetype. Bold indicates best per row. The LA-GRPO evaluation uses a reduced game suite covering three core archetypes (200 games total per model).}
+\caption[LA-GRPO agreed-only Nash ratio by archetype.]{LA-GRPO agreed-only Nash ratio by archetype. Bold indicates best per row. The LA-GRPO evaluation uses a reduced game suite covering three core archetypes (200 games total per model).}
 \label{tab:lagrpo_arch_nash}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccc}
@@ -886,7 +886,7 @@ Table~\ref{tab:grpo_vs_lagrpo} provides a direct comparison between GRPO and LA-
 
 \begin{table}[H]
 \centering
-\caption{GRPO vs.\ LA-GRPO comparison on the same $\lambda$ configurations. Agreed ratio Nash measures per-deal cooperative quality.}
+\caption[GRPO vs.\ LA-GRPO comparison on the same $\lambda$ configurations.]{GRPO vs.\ LA-GRPO comparison on the same $\lambda$ configurations. Agreed ratio Nash measures per-deal cooperative quality.}
 \label{tab:grpo_vs_lagrpo}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{llccccc}
@@ -918,14 +918,14 @@ Figures~\ref{fig:pareto_grpo} and~\ref{fig:pareto_lagrpo} show $U_A$ vs.\ $U_B$ 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/pareto_scatter_grpo.pdf}
-    \caption{$U_A$ vs.\ $U_B$ for all GRPO models (agreed negotiations only). Diamond marks the mean outcome. Red crosses at origin indicate failed negotiations.}
+    \caption[$U_A$ vs.\ $U_B$ for all GRPO models.]{$U_A$ vs.\ $U_B$ for all GRPO models (agreed negotiations only). Diamond marks the mean outcome. Red crosses at origin indicate failed negotiations.}
     \label{fig:pareto_grpo}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/pareto_scatter_lagrpo.pdf}
-    \caption{$U_A$ vs.\ $U_B$ for all LA-GRPO models (agreed negotiations only).}
+    \caption[$U_A$ vs.\ $U_B$ for all LA-GRPO models.]{$U_A$ vs.\ $U_B$ for all LA-GRPO models (agreed negotiations only).}
     \label{fig:pareto_lagrpo}
 \end{figure}
 
@@ -936,7 +936,7 @@ Figure~\ref{fig:nash_bar} compares the mean game-normalized Nash ratio across al
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/nash_product_comparison.pdf}
-    \caption{Mean game-normalized Nash ratio by $\lambda$ configuration. The Nash ratio is the achieved Nash product divided by the maximum possible Nash product for that game (in $[0, 1]$); failed negotiations contribute zero. Bars are grouped by reward configuration to enable direct GRPO vs.\ LA-GRPO comparison; the dashed line shows the base model reference (0.585).}
+    \caption[Mean game-normalized Nash ratio by $\lambda$ configuration.]{Mean game-normalized Nash ratio by $\lambda$ configuration. The Nash ratio is the achieved Nash product divided by the maximum possible Nash product for that game (in $[0, 1]$); failed negotiations contribute zero. Bars are grouped by reward configuration to enable direct GRPO vs.\ LA-GRPO comparison; the dashed line shows the base model reference (0.585).}
     \label{fig:nash_bar}
 \end{figure}
 
@@ -952,7 +952,7 @@ Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee} show results when th
 
 \begin{table}[H]
 \centering
-\caption{Trust Game results: trained model as Investor vs.\ frozen base model as Trustee. Bold indicates best per row.}
+\caption[Trust Game results: trained model as Investor.]{Trust Game results: trained model as Investor vs.\ frozen base model as Trustee. Bold indicates best per row.}
 \label{tab:trust_investor}
 \renewcommand{\arraystretch}{1.15}
 \resizebox{\textwidth}{!}{%
@@ -974,7 +974,7 @@ Nash product & 63.4 & 80.8 & \textbf{83.1} & 65.1 & 71.3 & 62.9 & 61.4 \\
 
 \begin{table}[H]
 \centering
-\caption{Trust Game results: frozen base model as Investor, trained model as Trustee. Bold indicates best per row (excluding Investor payoff, where higher means the trustee returned more). The base sends exactly 5 with zero variance.}
+\caption[Trust Game results: trained model as Trustee.]{Trust Game results: frozen base model as Investor, trained model as Trustee. Bold indicates best per row (excluding Investor payoff, where higher means the trustee returned more). The base sends exactly 5 with zero variance.}
 \label{tab:trust_trustee}
 \renewcommand{\arraystretch}{1.15}
 \resizebox{\textwidth}{!}{%
@@ -1045,7 +1045,7 @@ Each persona is evaluated over 14 game configurations $\times$ 10 repetitions $=
 
 \begin{table}[H]
 \centering
-\caption{Robustness evaluation: LA-GRPO fair-only vs.\ base model against four adversarial personas (140 negotiations per cell). $\Delta$ shows the difference (LA-GRPO $-$ base). Agreement rate compared via Chi-squared test; $U_A$ and ratio $R_{\text{coop}}$ via Mann-Whitney U. Significance: $^* p < 0.05$, $^{**} p < 0.01$, $^{***} p < 0.001$, ns $=$ not significant.}
+\caption[Robustness: LA-GRPO fair-only vs.\ base.]{Robustness evaluation: LA-GRPO fair-only vs.\ base model against four adversarial personas (140 negotiations per cell). $\Delta$ shows the difference (LA-GRPO $-$ base). Agreement rate compared via Chi-squared test; $U_A$ and ratio $R_{\text{coop}}$ via Mann-Whitney U. Significance: $^* p < 0.05$, $^{**} p < 0.01$, $^{***} p < 0.001$, ns $=$ not significant.}
 \label{tab:robustness}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{llcccl}
@@ -1086,7 +1086,7 @@ To assess whether cooperative negotiation training degrades general LLM capabili
 
 \begin{table}[H]
 \centering
-\caption{Benchmark results for base model vs.\ trained models. $\Delta$ shows the difference in percentage points vs.\ the base model.}
+\caption[Benchmark results for base model vs.\ trained models.]{Benchmark results for base model vs.\ trained models. $\Delta$ shows the difference in percentage points vs.\ the base model.}
 \label{tab:benchmarks}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcccccc}
@@ -1116,7 +1116,7 @@ The GRPO vs.\ LA-GRPO comparison in Section~\ref{sec:grpo_vs_lagrpo} compared ea
 
 \begin{table}[H]
 \centering
-\caption{GRPO vs.\ LA-GRPO at matched compute budget (GRPO ckpt 560, LA-GRPO ckpt 760). Out-of-sample evaluation on 18 held-out game configurations, 360 negotiations per model. Bold indicates better per row within each $\lambda$ pair.}
+\caption[GRPO vs.\ LA-GRPO at matched compute budget.]{GRPO vs.\ LA-GRPO at matched compute budget (GRPO ckpt 560, LA-GRPO ckpt 760). Out-of-sample evaluation on 18 held-out game configurations, 360 negotiations per model. Bold indicates better per row within each $\lambda$ pair.}
 \label{tab:matched_budget}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{llcccc}
@@ -1431,7 +1431,7 @@ The illustration in Figure~\ref{fig:example_dialogue} depicts a mixed-motive neg
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/mixed-motive-example.png}
-    \caption{Own illustration of a mixed-motive self-play dialogue, inspired by the example in the LAMEN paper \citep{davidson2024evaluatinglanguagemodelagency}.}
+    \caption[Mixed-motive self-play dialogue example.]{Own illustration of a mixed-motive self-play dialogue, inspired by the example in the LAMEN paper \citep{davidson2024evaluatinglanguagemodelagency}.}
     \label{fig:example_dialogue}
 \end{figure}
 
