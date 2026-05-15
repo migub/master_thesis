@@ -1040,7 +1040,7 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 
 \subsubsection{AI Safety Scenarios (GT-HarmBench)}
 
-To probe transfer at a larger scale, all trained model variants are also evaluated on GT-HarmBench \citep{cobben2026gtharmbench}, a recent benchmark of $2{,}009$ high-stakes scenarios drawn from the MIT AI Risk Repository and mapped to seven game-theoretic structures (Prisoner's Dilemma, Stag Hunt, Chicken, Bach or Stravinski, Coordination, Matching Pennies, No Conflict). In each scenario, the model selects one of two actions; the key metrics are the \textit{utilitarian rate} (fraction of valid actions that maximize the sum of payoffs---the socially beneficial choice) and the \textit{Nash rate} (fraction matching the egoistic Nash equilibrium action, which in Prisoner's Dilemma corresponds to defection). Evaluations follow the benchmark's default \texttt{bare} environment with \texttt{before}-style reasoning, free-form generation, and a single fixed seed; for the matched-budget setup all GRPO models are evaluated at checkpoint $560$ and all LA-GRPO models at checkpoint $760$, yielding $2{,}265$ classifiable decisions per model (results vary slightly from $2{,}009$ scenarios because some scenarios contribute multiple decision points).
+To probe transfer at a larger scale, all trained model variants are also evaluated on GT-HarmBench \citep{cobben2026gtharmbench}, a recent benchmark of $2{,}009$ high-stakes scenarios drawn from the MIT AI Risk Repository and mapped to seven game-theoretic structures (Prisoner's Dilemma, Stag Hunt, Chicken, Bach or Stravinski, Coordination, Matching Pennies, No Conflict). In each scenario, the model selects one of two actions; the key metrics are the \textit{utilitarian rate} (fraction of valid actions that maximize the sum of payoffs---the socially beneficial choice) and the \textit{Nash rate} (fraction matching the egoistic Nash equilibrium action, which in Prisoner's Dilemma corresponds to defection). Evaluations follow the benchmark's default \texttt{bare} environment with \texttt{before}-style reasoning, free-form generation, and a single fixed seed, yielding $2{,}265$ classifiable decisions per model (results vary slightly from $2{,}009$ scenarios because some scenarios contribute multiple decision points).
 
 \begin{table}[H]
 \centering
@@ -1097,7 +1097,7 @@ LA-GRPO all-equal & 0.127 & 0.872 \\
 
 \subsection{Robustness to Defection (RQ4)}
 
-To evaluate whether cooperative training preserves negotiation effectiveness against adversarial counterparts, the LA-GRPO fair-only model (checkpoint 1340) is tested against four adversarial opponent personas, each implemented as a system-prompt variant of the base model. The four personas represent distinct manipulation strategies:
+To evaluate whether cooperative training preserves negotiation effectiveness against adversarial counterparts, the LA-GRPO fair-only model is tested against four adversarial opponent personas, each implemented as a system-prompt variant of the base model. The four personas represent distinct manipulation strategies:
 
 \begin{itemize}
     \item \textbf{Hardball}: aggressive, extreme initial offers, refusing to concede.
