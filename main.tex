@@ -770,6 +770,7 @@ Table~\ref{tab:eval_results} presents the main evaluation results across all GRP
 \caption[GRPO negotiation evaluation results.]{GRPO negotiation evaluation results (20 repetitions, 560 games per model). Bold indicates best per column. 95\% bootstrap confidence intervals in brackets.}
 \label{tab:eval_results}
 \renewcommand{\arraystretch}{1.15}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Model} & $\lambda$ \textbf{(s/w/f)} & \textbf{Agreement} & $\mathbf{U_A}$ \textbf{mean} & \textbf{Ratio Welfare} & \textbf{Ratio Nash} \\
@@ -781,7 +782,8 @@ Welfare-Only & 0/1/0 & 85.9\% & 57.5 \scriptsize{[54.8, 60.0]} & 0.778 \scriptsi
 \textbf{All-Equal} & \textbf{1/1/1} & \textbf{92.7\%} & \textbf{60.3} \scriptsize{[58.0, 62.6]} & \textbf{0.840} \scriptsize{[0.819, 0.861]} & \textbf{0.692} \scriptsize{[0.669, 0.716]} \\
 Self-Fair-Equal & 1/0/1 & 83.8\% & 57.0 \scriptsize{[54.4, 59.6]} & 0.757 \scriptsize{[0.727, 0.786]} & 0.625 \scriptsize{[0.596, 0.653]} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \paragraph{All trained models improve over baseline.} Every trained model significantly outperforms the base model on $U_A$ ($p < 0.05$, Mann-Whitney U test). The improvement ranges from $+10\%$ (self-only) to $+21\%$ (all-equal).
