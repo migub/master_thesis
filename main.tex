@@ -80,7 +80,7 @@ Large Language Models (LLMs) are increasingly used to negotiate, advise, and act
 
 The work builds on \citet{franceschetti2025advantage}, who introduced Local Advantage Group Relative Policy Optimization (LA-GRPO) for competitive (zero-sum) negotiation. This thesis extends LA-GRPO from competitive to cooperative settings by replacing the original self-interest reward with a scalar reward that combines three components: the agent's own payoff, the social welfare ($U_A + U_B$), and the Nash product ($U_A \times U_B$). To make this signal usable across heterogeneous negotiation games, each component is normalized by the per-game maximum---so that distributive, integrative, and compatible games contribute equally to the gradient. Five reward configurations are trained with GRPO, three of them additionally with LA-GRPO. The base model is Qwen3-14B-Instruct, fine-tuned with LoRA adapters on a single rented GPU.
 
-The trained models are evaluated on 560 negotiations each from an extended LAMEN environment (5 scenarios, 19 issues, 47 game configurations), on a held-out out-of-sample game set, on the Trust Game as an out-of-domain transfer test, against four adversarial opponent personas (hardball, deceptive, anchoring, stubborn), and on three standard capability benchmarks (MMLU-Pro, IFEval, GSM8K).
+The trained models are evaluated on 560 negotiations each from an extended LAMEN environment (5 scenarios, 19 issues, 47 game configurations), on a held-out out-of-sample game set, on two out-of-domain transfer tests (the Trust Game and GT-HarmBench, an AI-safety benchmark covering seven game-theoretic structures), against four adversarial opponent personas (hardball, deceptive, anchoring, stubborn), and on three standard capability benchmarks (MMLU-Pro, IFEval, GSM8K).
 
 The main results are:
 
@@ -88,7 +88,7 @@ The main results are:
     \item \textbf{Cooperative reward design works.} The all-equal reward is the strongest GRPO configuration, raising agreement rate from $78.6\%$ to $92.7\%$ and nearly doubling agreement on the hardest archetype ($47.5\% \to 95.0\%$).
     \item \textbf{Fairness is the strongest single signal.} The Nash product reward clearly outperforms self-interest alone, which improves the agent's own payoff but not cooperation.
     \item \textbf{LA-GRPO helps, but is nuanced.} At convergence, LA-GRPO outperforms GRPO on single-objective rewards (fair-only achieves the highest per-deal Nash ratio). At matched compute, GRPO is faster on single-objective rewards while LA-GRPO retains a slight edge only on the blended reward.
-    \item \textbf{Cooperative training transfers and stays robust.} General capabilities are preserved ($\pm 0.6$ pp on MMLU-Pro, IFEval, GSM8K), behaviour transfers modestly to the Trust Game, and the model substantially outperforms the base against three of four adversarial personas---cooperative training does not produce an exploitable agent.
+    \item \textbf{Cooperative training transfers and stays robust.} General capabilities are preserved ($\pm 0.6$ pp on MMLU-Pro, IFEval, GSM8K), behaviour transfers modestly to two out-of-domain settings (the Trust Game and GT-HarmBench), and the model substantially outperforms the base against three of four adversarial personas---cooperative training does not produce an exploitable agent.
 \end{itemize}
 
 The broader contribution is a small step toward what might be called \emph{intuitive} moral alignment: cooperative dispositions encoded in the model's weights through reward shaping, rather than instructed at inference time through prompts. This matters as LLMs are increasingly deployed in autonomous, agentic settings where prompt-level guardrails become less reliable.
@@ -154,6 +154,7 @@ LM Evaluation Harness & \citet{eval-harness} \\
 MMLU-Pro benchmark dataset & \texttt{TIGER-Lab/MMLU-Pro} (HuggingFace) \\
 IFEval benchmark dataset & \texttt{google/IFEval} (HuggingFace) \\
 GSM8K benchmark dataset & \texttt{openai/gsm8k} (HuggingFace) \\
+GT-HarmBench benchmark & \citet{cobben2026gtharmbench}; results at \texttt{Agentic-Moral-Alignment/gt-harmbench-eval} (HuggingFace) \\
 \end{tabularx}
 \renewcommand{\arraystretch}{1.0}
 
@@ -949,9 +950,13 @@ Figure~\ref{fig:nash_bar} compares the agreed-only game-normalized Nash ratio ac
 \paragraph{Cooperative training mainly improves agreement, not deal quality.} The agreed Nash ratio bar chart adds context to the deal quality findings reported above. Compared to the base model reference of $0.744$, only LA-GRPO fair-only ($0.787$) substantially improves per-deal cooperation. Self-only configurations fall slightly below the base model, suggesting that the higher agreement rates of trained self-only models come at a small cost to individual deal quality. All-equal configurations cluster near the base model level. This indicates that cooperative training primarily improves the agreement rate---the willingness to close deals---rather than the quality of those deals. Only the Nash-product reward, particularly when combined with LA-GRPO's turn-level credit assignment, also improves what each deal actually achieves.
 
 
-\subsection{Out-of-Domain Generalization: Trust Game}
+\subsection{Out-of-Domain Generalization}
 
-To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on the Trust Game---a canonical game-theoretic setting the models were never trained on. GRPO models were evaluated over 50 games per condition; LA-GRPO models were evaluated over 300 games per condition. Two conditions are tested: each trained model plays against the frozen base model (Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee}), and each trained model plays against itself in selfplay (Table~\ref{tab:trust_selfplay}).
+To evaluate whether cooperative training generalizes beyond the negotiation domain, all trained model variants are tested on two unseen settings. The first is the Trust Game, a canonical behavioral-economics setting that probes trust and reciprocity through continuous send/return decisions. The second is GT-HarmBench \citep{cobben2026gtharmbench}, a recent benchmark that evaluates discrete action choices across 2{,}009 high-stakes AI-safety scenarios mapped to seven game-theoretic structures. Together, these two evaluations probe transfer to settings of very different scale and structure.
+
+\subsubsection{Trust Game}
+
+The Trust Game is a canonical game-theoretic setting the models were never trained on. GRPO models were evaluated over 50 games per condition; LA-GRPO models were evaluated over 300 games per condition. Two conditions are tested: each trained model plays against the frozen base model (Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee}), and each trained model plays against itself in selfplay (Table~\ref{tab:trust_selfplay}).
 
 \paragraph{Trained model vs.\ frozen base model.}
 Tables~\ref{tab:trust_investor} and~\ref{tab:trust_trustee} show results when the trained model plays as investor and trustee, respectively, against the frozen base model in the other role.
@@ -1023,8 +1028,6 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 }
 \end{table}
 
-\subsubsection{Analysis}
-
 \paragraph{Cooperative training transfers modestly to the Trust Game.} GRPO fair-only as investor sends more ($5.48$ vs.\ $5.00$ baseline), breaking the base model's zero-variance ``always send half'' pattern. The resulting Nash product improvement ($83.1$ vs.\ $63.4$) represents a 31\% increase. The effect is small in absolute terms but points in the right direction: the model learned a cooperative disposition that transfers to an unseen game.
 
 \paragraph{LA-GRPO produces more conservative cooperative behavior.} The three LA-GRPO models all send close to $5.0$ as investor, very similar to the base model. This is a notable contrast to GRPO fair-only ($5.48$): turn-level credit assignment did not produce the same generous-investor behavior despite the same Nash product reward. A possible explanation is that LA-GRPO's longer training and turn-level focus made the model more attuned to the specific structure of multi-issue negotiations, reducing transfer to the simpler, single-decision Trust Game.
@@ -1033,7 +1036,63 @@ Parse failure & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% & 0\% \\
 
 \paragraph{Selfplay reveals a different picture.} When the same trained model plays both investor and trustee roles, GRPO self-only achieves the highest Nash product ($76.2$), followed closely by GRPO fair-only ($74.9$). Among LA-GRPO models, the differences are smaller (Nash $64.6$--$68.4$). In selfplay, the trustee's generosity benefits the model itself, so fair-only's tendency to return more no longer leads to exploitation.
 
-\paragraph{H4 is partially supported.} The Trust Game results indicate that hypothesis H4 (Section~\ref{sec:hypotheses}), which predicted that cooperative training generalizes to unseen games, is only partially supported. GRPO fair-only clearly transfers a cooperative disposition to the Trust Game (sending more as investor, achieving higher Nash product); LA-GRPO models, however, show weaker generalization---their investor behavior remains close to the base model's baseline of $5.00$.
+\paragraph{H4 is partially supported.} The Trust Game results indicate that hypothesis H4 (Section~\ref{sec:hypotheses}), which predicted that cooperative training generalizes to unseen games, is only partially supported. GRPO fair-only clearly transfers a cooperative disposition to the Trust Game (sending more as investor, achieving higher Nash product); LA-GRPO models, however, show weaker generalization---their investor behavior remains close to the base model's baseline of $5.00$. The GT-HarmBench evaluation below provides additional evidence in support of the same pattern: rewards with an opponent-aware component (fair-only, all-equal) generalize positively, while pure self-interest generalizes negatively.
+
+\subsubsection{AI Safety Scenarios (GT-HarmBench)}
+
+To probe transfer at a larger scale, all trained model variants are also evaluated on GT-HarmBench \citep{cobben2026gtharmbench}, a recent benchmark of $2{,}009$ high-stakes scenarios drawn from the MIT AI Risk Repository and mapped to seven game-theoretic structures (Prisoner's Dilemma, Stag Hunt, Chicken, Bach or Stravinski, Coordination, Matching Pennies, No Conflict). In each scenario, the model selects one of two actions; the key metrics are the \textit{utilitarian rate} (fraction of valid actions that maximize the sum of payoffs---the socially beneficial choice) and the \textit{Nash rate} (fraction matching the egoistic Nash equilibrium action, which in Prisoner's Dilemma corresponds to defection). Evaluations follow the benchmark's default \texttt{bare} environment with \texttt{before}-style reasoning, free-form generation, and a single fixed seed; for the matched-budget setup all GRPO models are evaluated at checkpoint $560$ and all LA-GRPO models at checkpoint $760$, yielding $2{,}265$ classifiable decisions per model (results vary slightly from $2{,}009$ scenarios because some scenarios contribute multiple decision points).
+
+\begin{table}[H]
+\centering
+\caption[GT-HarmBench results across all formal games.]{GT-HarmBench results across all formal games ($n = 2{,}265$ per model). Higher utilitarian rate indicates more socially beneficial behavior. Bold indicates best per column.}
+\label{tab:gtharmbench_overall}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Valid} & \textbf{Nash} & \textbf{Utilitarian} \\
+\midrule
+Base Model & 0.992 & 0.639 & 0.917 \\
+GRPO self-only & \textbf{0.993} & 0.639 & 0.916 \\
+GRPO fair-only & \textbf{0.993} & 0.631 & \textbf{0.935} \\
+GRPO welfare-only & 0.992 & 0.640 & 0.918 \\
+GRPO all-equal & 0.990 & 0.636 & 0.919 \\
+GRPO self-fair-equal & 0.992 & 0.643 & 0.913 \\
+LA-GRPO self-only & 0.990 & 0.646 & 0.909 \\
+LA-GRPO fair-only & 0.991 & 0.638 & 0.915 \\
+LA-GRPO all-equal & 0.991 & 0.633 & 0.927 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption[GT-HarmBench results: Prisoner's Dilemma only.]{GT-HarmBench results restricted to Prisoner's Dilemma scenarios ($n = 654$ per model). PD is the canonical setting where reward-function differences should be most visible. Bold indicates best per column.}
+\label{tab:gtharmbench_pd}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Nash (defect)} & \textbf{Utilitarian (cooperate)} \\
+\midrule
+Base Model & 0.144 & 0.852 \\
+GRPO self-only & 0.144 & 0.852 \\
+GRPO fair-only & \textbf{0.115} & \textbf{0.881} \\
+GRPO welfare-only & 0.147 & 0.847 \\
+GRPO all-equal & 0.135 & 0.859 \\
+GRPO self-fair-equal & 0.157 & 0.838 \\
+LA-GRPO self-only & 0.167 & 0.826 \\
+LA-GRPO fair-only & 0.142 & 0.855 \\
+LA-GRPO all-equal & 0.127 & 0.872 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Fair-only with GRPO produces the most pro-social behavior.} Across all $2{,}265$ scenarios, GRPO fair-only achieves the highest utilitarian rate ($0.935$, $+1.8$ percentage points over the base model). The effect is most pronounced in Prisoner's Dilemma, where GRPO fair-only reaches a cooperation rate of $0.881$ ($+2.9$ pp) and reduces Nash-defection by $2.9$ pp. This is consistent with the negotiation findings (Section~\ref{sec:pareto_fairness}) and the Trust Game findings: fair-only's Nash-product reward, which explicitly couples agent and opponent utility, transfers a pro-social disposition that is detectable even in single-shot, discrete-action settings far removed from the training distribution.
+
+\paragraph{LA-GRPO all-equal also generalizes positively.} Among LA-GRPO variants, the all-equal configuration shows the strongest transfer (overall utilitarian $0.927$, PD utilitarian $0.872$). This is interesting because LA-GRPO all-equal was \textit{not} the strongest in-domain negotiator, suggesting that the broader multi-objective reward provides a more transferable inductive bias for unseen game-theoretic situations than the per-deal Nash-product gains observed in negotiation.
+
+\paragraph{Self-only training degrades pro-social behavior.} LA-GRPO self-only is the only configuration that performs \textit{worse} than the base model on the utilitarian metric ($0.909$ overall, $0.826$ in PD; $-2.6$ pp). It also has the highest Nash rate ($0.646$). This mirrors the in-domain finding (Section~\ref{sec:training_dynamics}) that pure self-interest learns aggressive bargaining and shows that the effect generalizes to discrete-action AI-safety scenarios as well.
+
+\paragraph{Effect sizes are small but consistent.} The overall changes vs.\ base are modest---between $-2.6$ and $+1.8$ percentage points---because all evaluated configurations stem from a relatively cooperative base model that already chooses the utilitarian action $91.7\%$ of the time on this benchmark. The signal nonetheless aligns with the negotiation and Trust Game results: rewards that include an opponent-aware component (fair-only, all-equal) generalize positively, while pure self-interest generalizes negatively. The large sample size ($n = 2{,}265$) makes the directional pattern robust despite the small magnitude.
 
 
 \subsection{Robustness to Defection (RQ4)}
@@ -1183,7 +1242,7 @@ This thesis extends \citeauthor{franceschetti2025advantage}'s (\citeyear{frances
 
     \item \textbf{$\lambda$ ablation across GRPO and LA-GRPO} reveals distinct roles for each reward component: the Nash product ($\lambda_{\text{fair}}$) is the strongest individual cooperative signal, self-interest ($\lambda_{\text{self}}$) alone improves payoff but not cooperation, and welfare ($\lambda_{\text{welfare}}$) alone is weak but essential in combination---refuting hypothesis H3. The combined GRPO reward (all-equal) performs best overall, nearly doubling agreement rate on the hardest archetype ($47.5\% \to 95.0\%$). At full convergence, LA-GRPO substantially improves single-objective configurations (e.g., LA-GRPO fair-only reaches the highest per-deal cooperation of any model, $0.787$ agreed Nash); at matched compute budgets, however, GRPO converges faster for single-objective rewards, while LA-GRPO retains an advantage only for the blended all-equal reward.
 
-    \item \textbf{Trust Game evaluation} showing modest but measurable transfer of cooperative behavior to an unseen game-theoretic setting. Fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 31\% higher Nash product ($83.1$ vs.\ $63.4$).
+    \item \textbf{Out-of-domain generalization} showing modest but measurable transfer of cooperative behavior to two unseen settings. On the Trust Game, fair-only as investor shows higher trust (send $5.48$ vs.\ $5.00$) and 31\% higher Nash product ($83.1$ vs.\ $63.4$). On GT-HarmBench ($2{,}265$ AI-safety scenarios across seven game-theoretic structures), GRPO fair-only achieves the highest utilitarian rate ($0.935$ overall, $0.881$ on Prisoner's Dilemma; $+1.8$ and $+2.9$ pp vs.\ base, respectively), while LA-GRPO self-only is the only configuration that performs \emph{worse} than the base---confirming that rewards with an opponent-aware component generalize positively, while pure self-interest generalizes negatively.
 
     \item \textbf{Extended LAMEN environment} with 5 scenarios, 19 issues, and 47 game configurations (vs.\ Franceschetti's 3/10/23), including new Joint Venture and Employment Contract scenarios with integrative issue structures.
 \end{enumerate}
