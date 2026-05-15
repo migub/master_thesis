@@ -140,21 +140,21 @@ vLLM      & Virtual LLM (inference engine) \\
 \section*{List of Data Sources}
 \addcontentsline{toc}{section}{List of Data Sources}
 
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{p{5.5cm}p{9.5cm}}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{6.5cm}>{\raggedright\arraybackslash}X@{}}
 \textbf{Resource} & \textbf{Source} \\
 \hline
 Qwen3-14B-Instruct (base model) & \texttt{OpenPipe/Qwen3-14B-Instruct} (HuggingFace) \\
 LAMEN framework & \citet{davidson2024evaluatinglanguagemodelagency} \\
 LA-GRPO reference implementation & \citet{franceschetti2025advantage} \\
-Training and evaluation code & \url{https://github.com/migub/multiturn-llm-training} \\
+Training and evaluation code & \url{github.com/migub/multiturn-llm-training} \\
 GRPO training experiment logs (W\&B Report) & \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/ig05od0g} \\
 LA-GRPO training experiment logs (W\&B Report) & \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/dlwxgofj} \\
 LM Evaluation Harness & \citet{eval-harness} \\
 MMLU-Pro benchmark dataset & \texttt{TIGER-Lab/MMLU-Pro} (HuggingFace) \\
 IFEval benchmark dataset & \texttt{google/IFEval} (HuggingFace) \\
 GSM8K benchmark dataset & \texttt{openai/gsm8k} (HuggingFace) \\
-\end{tabular}
+\end{tabularx}
 \renewcommand{\arraystretch}{1.0}
 
 \newpage
