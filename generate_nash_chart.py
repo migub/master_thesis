@@ -1,6 +1,7 @@
 """
 Generate Figure 9: Deal Quality - Game-Normalized Nash Ratio by lambda Configuration
 Uses agreed-only Nash ratio (from Table 12 'Agreed r_Nash' column).
+Base model agreed Nash derived from: Overall Nash / Agreement Rate = 0.585 / 0.786 = 0.744
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,9 @@ from matplotlib.ticker import MultipleLocator
 configs = ['Self-Only', 'Fair-Only', 'All-Equal']
 grpo_values = [0.728, 0.740, 0.747]
 lagrpo_values = [0.716, 0.787, 0.740]
+
+# Base model agreed Nash: derived from Table 7 (0.585 overall / 0.786 agreement)
+base_agreed_nash = 0.744
 
 # Bar chart setup
 x = np.arange(len(configs))
@@ -23,6 +27,9 @@ color_lagrpo = '#1f4f7a'  # dark blue
 
 bars1 = ax.bar(x - width/2, grpo_values, width, label='GRPO', color=color_grpo, edgecolor='black', linewidth=0.5)
 bars2 = ax.bar(x + width/2, lagrpo_values, width, label='LA-GRPO', color=color_lagrpo, edgecolor='black', linewidth=0.5)
+
+# Base model dashed reference line
+ax.axhline(y=base_agreed_nash, color='gray', linestyle='--', linewidth=1.2, label=f'Base Model ({base_agreed_nash:.3f})')
 
 # Value labels above bars
 for bars in [bars1, bars2]:
