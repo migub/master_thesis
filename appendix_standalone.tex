@@ -24,4 +24,393 @@
 
 \appendix
 
+\section{Negotiation Prompt Template}
+\label{app:prompt}
+
+This appendix reconstructs the exact system prompt used during training and evaluation, assembled at runtime in \texttt{envs/negotiation/games.py} from three sources: (i)~the scenario description (shared between both agents), (ii)~the agent-specific role description and payoff tables, and (iii)~the general game rules.
+
+The concrete example below shows the startup-side system prompt for an Employment Contract negotiation over two issues (salary and remote work). The candidate-side prompt has identical structure with mirrored payoffs.
+
+\begin{quote}
+\small
+\begin{verbatim}
+A growing startup and a senior software engineer are negotiating
+the terms of an employment contract. Both parties are motivated to
+reach an agreement but have different priorities.
+
+You are an advisor representing the best interests of the startup.
+Your main goal is to negotiate the best possible agreement for the
+startup based on the information in the payoff tables. The numbers
+in the payoff tables show how valuable each outcome is to you. You
+can trust that the payoffs assigned to the different options in
+your table are accurate.
+
+Your payoffs and possible values are listed in the payoff tables
+below. Adopt these payoffs as your preferences while negotiating.
+
+Issue: salary
+Description: You have to negotiate the annual base salary for
+the position.
+Your payoffs:
+  $80K:  10    $95K:   7    $110K:  4    $125K:  1
+  $85K:   9    $100K:  6    $115K:  3    $130K:  0
+  $90K:   8    $105K:  5    $120K:  2
+
+Issue: remote work
+Description: You have to negotiate the number of remote work days
+per week. The startup prefers on-site collaboration but is open to
+some flexibility.
+Your payoffs:
+  0 days: 10   2 days: 6    4 days: 2
+  1 day:   8   3 days: 4    5 days: 0
+
+Never forget the following negotiation rules:
+- Your total payoff is the sum of your payoffs on all issues.
+  Higher payoffs are better than lower payoffs.
+- A valid agreement occurs only when all issues are decided.
+  Partial agreements result in a total payoff to you of zero.
+- You are not allowed to accept any agreement that results in a
+  payoff less than zero.
+- You are not allowed to deviate from or innovate with the payoffs
+  listed on the payoff table.
+- No side payments are allowed.
+- You may describe issues and elaborate on them as you see fit.
+  However, you are not allowed to invent additional issues.
+- Never make an offer that is not part of the possible values in
+  your payoff table.
+
+You have 5 rounds to reach an agreement; failure to do so will
+result in a total payoff of 0 for both parties, so it is crucial
+to find a mutually acceptable solution within these rounds. Also
+keep your answer as short and concise as possible. Directly state
+your offer and response to your negotiation partner, without
+showing your thought process. Make sure that you only talk about
+the issues in the payoff table, else your payoff will be 0. Do
+not mention your internal payoff to the other party, they are
+only for your reference, otherwise your payoff will be 0.
+\end{verbatim}
+\end{quote}
+
+The importance weighting vector $(\omega_{A,1}, \omega_{A,2})$ is not directly shown in the prompt; it is applied when computing the final payoff, where each issue's raw payoff is scaled by the corresponding weight. Weights are drawn independently for each agent from $\{0.9, 0.5, 0.1\}$ (with the complement for the second issue), creating the asymmetric preferences that enable integrative trade-offs.
+
+\section{Game Configuration Examples}
+\label{app:game_configs}
+
+The game environment is configured through two types of YAML files: \textbf{scenario files} (\texttt{envs/negotiation/configs/games/}) define the overall setting and role descriptions, while \textbf{issue files} (\texttt{envs/negotiation/configs/issues/}) define individual negotiable items with their payoff structures.
+
+\subsection*{Scenario File: Joint Venture}
+
+\begin{quote}
+\small
+\begin{verbatim}
+name: joint-venture
+description: Two technology companies are forming a joint venture
+  to develop and market a new AI-powered software platform. Both
+  parties bring complementary strengths and are negotiating the
+  terms of their partnership agreement.
+sides:
+  - You are an advisor representing the best interests of
+    TechAlpha. Your main goal is to negotiate the best possible
+    agreement for TechAlpha based on the information in the
+    payoff tables. [...]
+  - You are an advisor representing the best interests of
+    BetaSoft. Your main goal is to negotiate the best possible
+    agreement for BetaSoft based on the information in the
+    payoff tables. [...]
+parties:
+  - TechAlpha
+  - BetaSoft
+\end{verbatim}
+\end{quote}
+
+\subsection*{Issue Files}
+
+Each issue specifies its type (\texttt{distributive}, \texttt{compatible}, or \texttt{integrative}), natural-language descriptions for each side, numeric payoffs, and human-readable labels. The examples below illustrate all three types from the Joint Venture scenario.
+
+\paragraph{Distributive issue (zero-sum).}
+Each agent's payoff is the inverse of the other's; one party's gain is the other's loss.
+
+\begin{quote}
+\small
+\begin{verbatim}
+name: revenue split
+issue_type: distributive
+descriptions:
+  - You have to negotiate what percentage of the joint venture's
+    revenue your company will receive.
+  - You have to negotiate what percentage of the joint venture's
+    revenue your company will receive.
+payoffs:
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  - [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+payoff_labels:
+  - ["25%", "30%", "35%", "40%", "45%", "50%",
+     "55%", "60%", "65%", "70%", "75%"]
+  - ["25%", "30%", "35%", "40%", "45%", "50%",
+     "55%", "60%", "65%", "70%", "75%"]
+\end{verbatim}
+\end{quote}
+
+\paragraph{Compatible issue (aligned).}
+Both agents benefit equally from higher values---there is no conflict of interest.
+
+\begin{quote}
+\small
+\begin{verbatim}
+name: R&D budget
+issue_type: compatible
+descriptions:
+  - You have to negotiate the annual R&D budget for the joint
+    venture. A higher budget leads to a better product for both
+    companies.
+  - You have to negotiate the annual R&D budget for the joint
+    venture. A higher budget leads to a better product for both
+    companies.
+payoffs:
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+payoff_labels:
+  - ["$0", "$1M", "$2M", "$3M", "$4M", "$5M",
+     "$6M", "$7M", "$8M", "$9M", "$10M"]
+  - ["$0", "$1M", "$2M", "$3M", "$4M", "$5M",
+     "$6M", "$7M", "$8M", "$9M", "$10M"]
+\end{verbatim}
+\end{quote}
+
+\paragraph{Integrative issue (asymmetric).}
+Both agents value the issue, but with differently shaped payoff curves. This asymmetry creates opportunities for integrative trade-offs: one party can gain significantly by conceding on this issue in exchange for gains elsewhere, while the other loses relatively little.
+
+\begin{quote}
+\small
+\begin{verbatim}
+name: decision authority
+issue_type: integrative
+descriptions:
+  - You have to negotiate how many of the 10 key decision areas
+    in the joint venture your company will control. Having more
+    control allows you to steer the venture's strategic direction.
+  - You have to negotiate how many of the 10 key decision areas
+    in the joint venture your company will control. You value
+    operational independence but are flexible on strategic
+    control.
+payoffs:
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  - [5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0]
+payoff_labels:
+  - ["0 areas", "1 area", "2 areas", ..., "10 areas"]
+  - ["0 areas", "1 area", "2 areas", ..., "10 areas"]
+\end{verbatim}
+\end{quote}
+
+All 19 issues across the 5 scenarios follow this same structure. The full set of YAML files is available in the code repository.
+
+\section{Example Self-Play Dialogues}
+\label{app:example_dialogue}
+
+\subsection*{Illustrative Example (Mixed-Motive)}
+
+The illustration in Figure~\ref{fig:example_dialogue} depicts a mixed-motive negotiation with two issues (one distributive, one compatible), showing how agents navigate competitive and cooperative dynamics simultaneously.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/mixed-motive-example.png}
+    \caption[Mixed-motive self-play dialogue example.]{Own illustration of a mixed-motive self-play dialogue, inspired by the example in the LAMEN paper \citep{davidson2024evaluatinglanguagemodelagency}.}
+    \label{fig:example_dialogue}
+\end{figure}
+
+\subsection*{Real Evaluation Sample}
+
+The following transcript is an actual dialogue from the post-training evaluation, capturing a selfplay negotiation on the \textit{data sharing} issue from the Joint Venture scenario. Both agents prefer higher values (compatible issue), so the negotiation centers on converging to a mutually acceptable level. Agent~A plays TechAlpha; Agent~B plays BetaSoft.
+
+\begin{quote}
+\small
+\textbf{Agent A:} I propose a data sharing agreement of 80\% for BetaSoft. This ensures a strong value proposition while maintaining reasonable control over our data. What do you think?
+
+\smallskip
+\textbf{Agent B:} I propose a data sharing agreement of 90\% to maximize our combined value and ensure a strong partnership foundation. What do you think?
+
+\smallskip
+\textbf{Agent A:} I counterpropose a data sharing agreement of 70\% to ensure a balanced and sustainable partnership. What do you think?
+
+\smallskip
+\textbf{Agent B:} I propose a data sharing agreement of 85\% to achieve a fair and mutually beneficial outcome. What do you think?
+
+\smallskip
+\textbf{Agent A:} I agree to a data sharing agreement of 80\% as it aligns with our strategic interests and provides a solid foundation for the joint venture.
+
+\smallskip
+\textbf{Agent B:} I accept the data sharing agreement of 80\%. The agreement is valid and finalized.
+\end{quote}
+
+The negotiation converges to 80\%, yielding $U_A = 8$ and $U_B = 8$ out of a maximum of 10 each. Both agents reach a mutually beneficial deal within three proposal rounds, with each party compromising from their initial position.
+
+\section{Trust Game Prompts}
+\label{app:trust_game}
+
+The Trust Game is a two-turn out-of-domain evaluation. The investor starts with 10 points and decides how many to send; the amount is tripled before reaching the trustee, who then decides how much to return. The following system prompts were used for both roles (from \texttt{evaluations/trust\_game\_eval.py}).
+
+\subsection*{Investor Prompt}
+
+\begin{quote}
+\small
+\begin{verbatim}
+You are playing the Trust Game as the Investor.
+
+Rules:
+- You start with 10 points.
+- You choose how many points (0-10, whole numbers only) to
+  send to the Trustee.
+- Any points you send are TRIPLED before the Trustee receives
+  them.
+- The Trustee then decides how many points to return to you.
+- Your final payoff = (10 - amount sent) + amount returned
+  by Trustee.
+
+Example: If you send 6 points, you keep 4. The Trustee
+receives 18 (6x3). If the Trustee returns 9, your payoff =
+4 + 9 = 13. Trustee's payoff = 18 - 9 = 9.
+
+You must decide how many points to send. State your decision
+clearly. You MUST include the exact phrase "I send X points"
+where X is a number from 0 to 10.
+\end{verbatim}
+\end{quote}
+
+\subsection*{Trustee Prompt}
+
+\begin{quote}
+\small
+\begin{verbatim}
+You are playing the Trust Game as the Trustee.
+
+Rules:
+- The Investor started with 10 points and chose to send some
+  to you.
+- Whatever they sent was TRIPLED — that is your total received
+  amount.
+- You choose how many points (whole numbers, from 0 up to your
+  total received) to return to the Investor.
+- Your final payoff = total received - amount returned.
+- Investor's final payoff = (10 - amount they sent) + amount
+  you return.
+
+Example: If the Investor sends 6, you receive 18 (6x3). If
+you return 9, your payoff = 18 - 9 = 9. Investor's payoff =
+4 + 9 = 13.
+
+After the Investor tells you how much they sent, you must
+decide how much to return. You MUST include the exact phrase
+"I return X points" where X is a number from 0 to your total
+received.
+\end{verbatim}
+\end{quote}
+
+The explicit output format constraints (\texttt{I send X points} / \texttt{I return X points}) are required for reliable numeric extraction from the model's free-form text response. Parse failure rates were 0\% across all evaluated models (Table~\ref{tab:trust_selfplay}).
+
+
+\section{Code and Reproducibility}
+\label{app:code}
+
+The complete codebase used for this thesis is publicly available at:
+\begin{center}
+\url{https://github.com/migub/multiturn-llm-training}
+\end{center}
+
+The repository is a fork of \citet{franceschetti2025advantage}'s original LA-GRPO codebase, extended for cooperative negotiation as described in Section~\ref{sec:methodology}. This appendix documents the key files that constitute the methodological contribution of this thesis and provides pointers for reproducing the experiments.
+
+\paragraph{Repository structure.}
+\begin{itemize}
+    \item \texttt{multiturn\_llm\_training/grpo/} --- GRPO and LA-GRPO training code.
+    \item \texttt{multiturn\_llm\_training/DPO/}, \texttt{multiturn\_llm\_training/REFUEL/} --- inherited from upstream, not used in this thesis.
+    \item \texttt{envs/negotiation/} --- LAMEN-based negotiation environment, reward computation, game configurations, and per-game maximum metric computation.
+    \item \texttt{evaluations/} --- post-training evaluation scripts and result JSON files for negotiation, Trust Game, robustness, and benchmarks.
+    \item \texttt{configs/} --- Hydra YAML configurations for scenarios, agents, and training runs.
+\end{itemize}
+
+\paragraph{Key files.}
+
+\begin{itemize}
+    \item \texttt{multiturn\_llm\_training/grpo/grpo\_single\_gpu.py} (203 lines) --- entry point for GRPO training on a single GPU. Handles argument parsing, model loading with 4-bit quantization (\texttt{BitsAndBytesConfig}, nf4), LoRA adapter configuration, and instantiation of the trainer. This file was rewritten from the original multi-GPU pipeline to operate on a single rented A100 or RTX 5090.
+
+    \item \texttt{multiturn\_llm\_training/grpo/multiturn\_grpo\_trainer.py} (789 lines) --- the core training loop. Implements multi-turn negotiation rollouts, the cooperative reward computation (Section~\ref{sec:cooperative_reward}), the group-relative advantage update, KL regularization against the reference model, and Weights \& Biases logging. The trainer is structurally based on Franceschetti's \texttt{LAGRPOTrainer} but adapted to use standard HuggingFace + BitsAndBytes + PEFT (no Unsloth dependency) to ensure compatibility with the cooperative reward signal and the larger Qwen3-14B base model.
+
+    \item \texttt{envs/negotiation/env.py} --- contains the \texttt{compute\_max\_metrics()} function, which brute-forces the per-game maximum of each reward component across all $\leq 121$ outcome combinations for normalization (Section~\ref{sec:cooperative_reward}).
+\end{itemize}
+
+\paragraph{Training and evaluation logs.}
+All training runs are publicly available as Weights \& Biases reports:
+\begin{itemize}
+    \item \textbf{GRPO runs}: \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/ig05od0g}
+    \item \textbf{LA-GRPO runs}: \url{https://api.wandb.ai/links/michael-gubler-hochschule-luzern/dlwxgofj}
+\end{itemize}
+
+These reports include all metrics shown in the training-dynamics figures (Section~\ref{sec:training_dynamics}), the hyperparameter configurations, and additional run-level metadata not included in the main text.
+
+
+\section{Declaration of Authorship}
+\label{app:declaration}
+I hereby declare that I have written this thesis independently and exclusively with the aids and/or support of third parties provided by the Lucerne School of Business, in compliance with the guidelines for the use of AI and GenAI tools. All sources and literature used have been fully cited. In addition, I undertake to protect the confidentiality interests of the client and all other persons or organisations involved and to comply with the copyright regulations of the Lucerne University of Applied Sciences and Arts.
+
+\vspace{0.5cm}
+\noindent Winterthur, May 2026
+
+\begin{figure}[H]
+    \includegraphics[width=1in]{images/signature.png}
+\end{figure}
+
+\noindent\textbf{Michael Gubler}
+
+\section{Statement on the Use of Artificial Intelligence}
+\label{app:ai_statement}
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{
+  @{}>{\raggedright\arraybackslash}p{2.5cm}
+  >{\raggedright\arraybackslash}p{4.1cm}
+  >{\raggedright\arraybackslash}p{2.2cm}
+  >{\raggedright\arraybackslash}p{2cm}@{}}
+\toprule
+\textbf{Purpose of use} &
+\textbf{Description of what AI tools were used for} &
+\textbf{Affected parts} &
+\textbf{AI tools used} \\
+\midrule
+Brainstorming &
+Providing feedback to ideas, helping to find new solutions &
+Chapters 3--6 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Literature research &
+Providing a list of papers with summarization &
+Chapters 2, 4 and 6 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Code development &
+Implementation support for training pipeline, evaluation scripts, and reward functions &
+Chapters 3--5 &
+\href{https://claude.ai}{Claude} \\
+\addlinespace[0.3em]
+Translation &
+Translating a few parts from German to English &
+Whole work, but rarely &
+\href{https://deepl.com}{DeepL Translate} \\
+\addlinespace[0.3em]
+Language improvement &
+Rewrite some sections to improve spelling, wording and flow &
+Whole work &
+\href{https://claude.ai}{Claude} \\
+\bottomrule
+\end{tabularx}
+\caption{Statement on the use of Artificial Intelligence}
+\end{table}
+
+
+% ============================================================
+% BIBLIOGRAPHY
+% ============================================================
+\newpage
+
 \end{document}
